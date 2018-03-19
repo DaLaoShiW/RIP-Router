@@ -1,0 +1,6 @@
+{
+  "routes": [
+    {"dest": 1, "first_hop": 3, "cost": 1, "learned_from": 2, "time": 30},
+    {"dest": 2, "first_hop": 3, "cost": 5, "learned_from": 3}
+  ]
+}
