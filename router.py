@@ -1,6 +1,8 @@
 from socket import *
 from select import select
+from collections import OrderedDict
 import sys
+import json
 
 import config_loader
 
@@ -32,15 +34,38 @@ class Router:
 
         self.input_sockets = {}
 
+        self.routing_table = {}
+
     def bind_sockets(self):
-        """ Bind and connect sockets between input ports and outputs """
+        """ Bind sockets to input ports """
         for input_port in self.input_ports:
             a_socket = socket(AF_INET, SOCK_DGRAM)
             a_socket.bind(("localhost", input_port))
             self.input_sockets[input_port] = a_socket
 
+    def initialise_routing_table(self):
+        """  Initialise the router's routing table """
+        with open("./routing-table-" + str(self.id) + ".json", "w+") as routing_table_file:
+            if routing_table_file.readlines():
+                # routing_table_json = json.load(routing_table_file)
+                # TODO: check if this json contains the info from 'outputs'
+                pass
+            else:
+                routing_table = {}
+                for router_id in self.outputs:
+                    inner_object = OrderedDict([
+                        ("first_hop", router_id),
+                        ("cost", self.outputs[router_id][1]),
+                        ("learned=from", "N/A"),
+                        ("time", 0)
+                    ])
+                    row = {router_id: inner_object}
+                    routing_table.update(row)
+                json.dump(routing_table, routing_table_file, indent=4)
+                self.routing_table = routing_table
+
     def run(self):
-        """ Checks and processes incoming packets (select) and timing events."""
+        """ Check and process incoming packets (select) and timing events."""
         read_ready = select(self.input_sockets.values(), [], [], self.READ_TIMEOUT)[0]
         for a_socket in read_ready:
             print("READ READY!", a_socket)
@@ -64,9 +89,10 @@ def main():
 
     router = Router(config_lines)
     router.bind_sockets()
+    router.initialise_routing_table()
 
-    while True:
-        router.run()
+    # while True:
+    #     router.run()
 
 if __name__ == "__main__":
     main()
