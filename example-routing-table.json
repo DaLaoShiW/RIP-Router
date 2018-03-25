@@ -1,6 +1,14 @@
 {
-  "routes": [
-    {"destination": 1, "first_hop": 3, "cost": 1, "learned-from": 2, "time": 30},
-    {"destination": 2, "first_hop": 3, "cost": 5, "learned-from": 3, "time": 180}
-  ]
+    "2": {
+        "first_hop": 2,
+        "cost": 1,
+        "learned=from": "N/A",
+        "time": 0
+    },
+    "3": {
+        "first_hop": 3,
+        "cost": 5,
+        "learned=from": "N/A",
+        "time": 0
+    }
 }
