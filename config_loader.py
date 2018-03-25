@@ -10,6 +10,7 @@ class Loader:
 
     INFINITY = 16
 
+    DEFAULT_UPDATE_PERIOD = 30
     TIMEOUT_UPDATE_RATIO = 6
 
     def __init__(self, config_lines, router):
@@ -44,13 +45,16 @@ class Loader:
                         exit(11)
             self.line_number += 1
 
-        if all([self.router.id, self.router.input_ports, self.router.outputs,
-                self.router.update_period, self.router.timeout_length]):
+        if self.router.update_period is None:
+            self.router.update_period = self.DEFAULT_UPDATE_PERIOD
+            self.router.timeout_length = self.DEFAULT_UPDATE_PERIOD * self.TIMEOUT_UPDATE_RATIO
+
+        if all([self.router.id, self.router.input_ports, self.router.outputs]):
             print("Configuration loaded!")
             self.print_config_values()
         else:
             print("Error in configuration file")
-            print("Incomplete configuration")
+            print("Incomplete configuration, 'router-id', 'input-ports', and 'outputs' required")
             self.print_config_values()
             print()
             exit(1)
