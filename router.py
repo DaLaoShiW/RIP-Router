@@ -2,6 +2,7 @@ from socket import *
 from select import select
 from collections import OrderedDict
 import sys
+import os
 import json
 import time
 
@@ -48,6 +49,7 @@ class Router:
 
     def initialise_routing_table(self):
         """  Initialise the router's routing table """
+        os.makedirs(os.path.dirname("./json-memory/"), exist_ok=True)
         with open("./json-memory/routing-table-" + str(self.id) + ".json", "w+") as routing_table_file:
             if routing_table_file.readlines():
                 # routing_table_json = json.load(routing_table_file)
