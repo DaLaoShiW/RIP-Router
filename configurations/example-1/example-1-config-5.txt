@@ -1,0 +1,5 @@
+# Example comment, any lines starting with '#' are ignored
+router-id 5
+input-ports  9050
+outputs 9032/3/3
+update-period 5
