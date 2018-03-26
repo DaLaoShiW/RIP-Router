@@ -83,7 +83,7 @@ class Loader:
 
     def process_input_ports(self, line):
         """ Set the input-ports for the router """
-        parts = " ".join(line.split(" ")[1:]).split(",")  # Remove 'input-ports' and split on commas.
+        parts = " ".join(line.split(" ")[1:]).split(",")  # Remove 'input-ports' and split on commas
         if not any(parts):
             raise ValueError("No input-ports given")
         for port in parts:
@@ -92,7 +92,7 @@ class Loader:
 
     def process_outputs(self, line):
         """ Set and format neighbor routers (outputs) and their costs/router-ids """
-        parts = " ".join(line.split(" ")[1:]).split(",")  # Remove 'outputs' and split on commas.
+        parts = " ".join(line.split(" ")[1:]).split(",")  # Remove 'outputs' and split on commas
         if not any(parts):
             raise ValueError("No outputs given")
         for output in parts:
