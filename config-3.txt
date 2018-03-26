@@ -1,5 +1,0 @@
-# Example comment, any lines starting with '#' are ignored
-router-id 3
-input-ports  9030, 9031
-outputs 9011/5/1, 9021/5/2
-update-period 30
