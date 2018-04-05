@@ -52,3 +52,13 @@ class Packet:
 
     def add_int32(self, name):
         self.add_field('i', 4, name)
+
+class TestPacket(Packet):
+
+    def __init__(self, byte_data=None):
+        super().__init__()
+        self.add_int8('Test number 1')
+        self.add_int8('Test number 2')
+        self.add_int8('Test number 3')
+        if byte_data:
+            self.unpack(byte_data)

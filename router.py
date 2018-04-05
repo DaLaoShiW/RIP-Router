@@ -1,10 +1,12 @@
 from socket import *
 from select import select
 from collections import OrderedDict
+from packet import *
 import sys
 import os
 import json
 import time
+import random
 
 import config_loader
 
@@ -76,15 +78,16 @@ class Router:
             self.time_of_last_update = time.time()
             # TODO: send update message / packet
             for output in self.outputs.values():
-                a_socket = socket(AF_INET, SOCK_DGRAM)
-                a_socket.sendto(b"Update", ("localhost", output[0]))
+                test_packet = TestPacket()
+                test_packet.send(output[0], *[random.randint(1,64) for _ in range(3)])
 
         # TODO: parse and process any and all periodic updates from other routers
         read_ready = select(self.input_sockets.values(), [], [], self.READ_TIMEOUT)[0]
         for a_socket in read_ready:
             print("READ READY!", a_socket)
             buffer = a_socket.recv(6)
-            print("RECEIVED:", buffer)
+            test_packet = TestPacket(buffer)
+            print("RECEIVED:", test_packet)
 
 
 def main():
