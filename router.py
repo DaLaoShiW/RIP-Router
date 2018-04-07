@@ -59,15 +59,17 @@ class Router:
                 pass
             else:
                 routing_table = {}
+
                 for router_id in self.outputs:
                     inner_object = OrderedDict([
                         ("first_hop", router_id),
                         ("cost", self.outputs[router_id][1]),
-                        ("learned=from", "N/A"),
+                        ("learned_from", "N/A"),
                         ("time", 0)
                     ])
                     row = {router_id: inner_object}
                     routing_table.update(row)
+
                 json.dump(routing_table, routing_table_file, indent=4)
                 self.routing_table = routing_table
 
@@ -76,18 +78,49 @@ class Router:
         if time.time() - self.time_of_last_update >= self.update_period:
             print("\tTime to send updates! --->")
             self.time_of_last_update = time.time()
-            # TODO: send update message / packet
-            for output in self.outputs.values():
-                test_packet = TestPacket()
-                test_packet.send(output[0], *[random.randint(1,64) for _ in range(3)])
 
-        # TODO: parse and process any and all periodic updates from other routers
+            for output in self.outputs.values():
+                rip_packet = RIPPacket()
+
+                for router_id, row in self.routing_table.items():
+                  # Split Horizon with Poisoned Reverse
+                  rip_packet.add_entry(router_id, self.INFINITY if row['learned_from'] == router_id else row['cost'])
+
+                rip_packet.send(output[0], self.id)
+
         read_ready = select(self.input_sockets.values(), [], [], self.READ_TIMEOUT)[0]
         for a_socket in read_ready:
-            print("READ READY!", a_socket)
-            buffer = a_socket.recv(6)
-            test_packet = TestPacket(buffer)
-            print("RECEIVED:", test_packet)
+            buffer = a_socket.recv(512)
+            rip_packet = RIPPacket(buffer)
+
+            input_router_id = rip_packet.from_router_id
+            input_router_cost = self.outputs[input_router_id][1]
+
+            for entry in rip_packet.entries:
+
+              new_cost = min(input_router_cost + entry['cost'], self.INFINITY)
+              existing_cost = self.INFINITY
+
+              if entry['router_id'] in self.routing_table:
+                existing_cost = self.routing_table[entry['router_id']]['cost']
+
+              if new_cost == self.INFINITY:
+                self.routing_table.pop(entry['router_id'])
+
+              if entry['router_id'] == self.id or new_cost >= existing_cost:
+                continue
+
+              inner_object = OrderedDict([
+                ("first_hop", input_router_id),
+                ("cost", new_cost),
+                ("learned_from", input_router_id),
+                ("time", 0)
+              ])
+              row = {entry['router_id']: inner_object}
+
+              self.routing_table.update(row)
+
+            print("Routing Table: ", json.dumps(self.routing_table, indent=4))
 
 
 def main():
