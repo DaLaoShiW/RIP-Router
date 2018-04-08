@@ -12,7 +12,7 @@ class Loader:
 
     DEFAULT_UPDATE_PERIOD = 30
     TIMEOUT_UPDATE_RATIO = 6
-    GARBAGE_UPDATE_RATIO = 4
+    DELETION_UPDATE_RATIO = 4
 
     def __init__(self, config_lines, router):
         self.config_lines = config_lines
@@ -49,6 +49,7 @@ class Loader:
         if self.router.update_period is None:
             self.router.update_period = self.DEFAULT_UPDATE_PERIOD
             self.router.timeout_length = self.DEFAULT_UPDATE_PERIOD * self.TIMEOUT_UPDATE_RATIO
+            self.router.deletion_length = self.DEFAULT_UPDATE_PERIOD * self.DELETION_UPDATE_RATIO
 
         if all([self.router.id, self.router.input_ports, self.router.outputs]):
             print("Configuration loaded!")
@@ -115,6 +116,7 @@ class Loader:
             raise ValueError("No update-period given")
         self.router.update_period = self.validate_update_period(parts[1].strip())
         self.router.timeout_length = self.TIMEOUT_UPDATE_RATIO * self.router.update_period
+        self.router.deletion_length = self.DELETION_UPDATE_RATIO * self.router.update_period
 
     def validate_router_id(self, router_id):
         """ Validate a router-id """

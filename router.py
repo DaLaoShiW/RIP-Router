@@ -2,10 +2,11 @@ import sys
 import json
 import random
 import time
+import os
 from collections import OrderedDict
 from select import select
 
-import config_loader
+from config_loader import Loader
 from packet import *
 
 
@@ -31,8 +32,9 @@ class Router:
         self.outputs = {}
         self.update_period = None
         self.timeout_length = None
+        self.deletion_length = None
         # Assign all variables above
-        self.config_loader = config_loader.Loader(config_lines, self)
+        self.config_loader = Loader(config_lines, self)
         self.config_loader.load()
 
         self.input_sockets = {}
@@ -75,25 +77,37 @@ class Router:
 
     def run(self):
         """ Check and process incoming packets (select) and timing events."""
+        if self.triggered_updates:
+            self.send_updates(self.triggered_updates)
+            self.triggered_updates = []
+
         if time.time() - self.time_of_last_update >= self.update_period:
             print("\tTime to send updates! --->")
 
+            routers_to_delete = []
             # Checking times and stuff
             for router_id, row in self.routing_table.items():
-                # row.time += time.time() - time_of_last_update .convert to seconds
-                # if row.time >= update_period * IMEOUT_UPDATE_RATIO:
-                #   row.cost = self.INFINITY
-                # if row.cost == INFINITY and row.time >= update_period * IMEOUT_UPDATE_RATIO + update_period * GARBAGE_UPDATE_RATIO:
-                #   row.delete
-                pass
+                updated_row = row
+                updated_row['time'] = row['time'] + time.time() - self.time_of_last_update
+
+                if row['cost'] != self.INFINITY and updated_row['time'] >= self.timeout_length:
+                    updated_row['cost'] = self.INFINITY
+                    self.triggered_updates.append(router_id)
+
+                needs_deletion = updated_row['time'] >= self.timeout_length + self.deletion_length
+
+                if updated_row['cost'] == self.INFINITY and needs_deletion:
+                    routers_to_delete.append(router_id)
+
+                updated_row = { router_id: updated_row }
+                self.routing_table.update(updated_row)
+
+            for router_id in routers_to_delete:
+                self.routing_table.pop(router_id)
 
             self.send_updates(self.routing_table.keys())
 
             self.time_of_last_update = time.time() + random.randint(-5, 5)
-
-        if self.triggered_updates:
-            self.send_updates(self.triggered_updates)
-            self.triggered_updates = []
 
         read_ready = select(self.input_sockets.values(), [], [], self.READ_TIMEOUT)[0]
         for a_socket in read_ready:
@@ -103,39 +117,59 @@ class Router:
             input_router_id = rip_packet.from_router_id
             input_router_cost = self.outputs[input_router_id][1]
 
+            self.routing_table[input_router_id]['time'] = 0
+
             for entry in rip_packet.entries:
 
                 new_cost = min(input_router_cost + entry['cost'], self.INFINITY)
+
                 existing_cost = self.INFINITY
+                existing_first_hop = input_router_id
+
+                timer = 0
 
                 if entry['router_id'] in self.routing_table:
-                    existing_cost = self.routing_table[entry['router_id']]['cost']
+                    existing_entry = self.routing_table[entry['router_id']]
+                    existing_cost = existing_entry['cost']
+                    existing_first_hop = existing_entry['first_hop']
+                    timer = existing_entry['time']
 
-                if new_cost == self.INFINITY:
-                    self.routing_table.pop(entry['router_id'])
-
-                if new_cost != existing_cost:
+                if new_cost == self.INFINITY and existing_cost != self.INFINITY:
+                    timer = self.timeout_length
                     self.triggered_updates.append(entry['router_id'])
 
-                if entry['router_id'] == self.id or new_cost >= existing_cost:
+                if entry['router_id'] == self.id:
                     continue
 
-                inner_object = OrderedDict([
-                    ("first_hop", input_router_id),
-                    ("cost", new_cost),
-                    ("learned_from", input_router_id),
-                    ("time", 0)
-                ])
-                row = {entry['router_id']: inner_object}
+                if new_cost != self.INFINITY and new_cost == existing_cost and existing_first_hop == input_router_id:
+                    self.routing_table[entry['router_id']]['time'] = 0
+                    continue
 
-                self.routing_table.update(row)
+                if new_cost < existing_cost or (new_cost != existing_cost and existing_first_hop == input_router_id):
+
+                    if new_cost != self.INFINITY:
+                        timer = 0
+
+                    inner_object = OrderedDict([
+                        ("first_hop", input_router_id),
+                        ("cost", new_cost),
+                        ("learned_from", input_router_id),
+                        ("time", timer)
+                    ])
+                    row = {entry['router_id']: inner_object}
+
+                    self.routing_table.update(row)
+
             print("Routing Table: ", json.dumps(self.routing_table, indent=4))
 
     def send_updates(self, router_ids):
+        router_ids = set(router_ids)
         for output in self.outputs.values():
             rip_packet = RIPPacket()
 
             for router_id in router_ids:
+                if router_id not in self.routing_table.keys():
+                    continue
                 row = self.routing_table[router_id]
                 # Split Horizon with Poisoned Reverse
                 rip_packet.add_entry(router_id, self.INFINITY if row['learned_from'] == router_id else row['cost'])
