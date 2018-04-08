@@ -12,6 +12,7 @@ class Loader:
 
     DEFAULT_UPDATE_PERIOD = 30
     TIMEOUT_UPDATE_RATIO = 6
+    GARBAGE_UPDATE_RATIO = 4
 
     def __init__(self, config_lines, router):
         self.config_lines = config_lines

@@ -57,6 +57,7 @@ class RIPPacket(Packet):
 
     def __init__(self, byte_data=None):
         super().__init__()
+        self.from_router_id = None
         self.entries = []
         self.num_entries = 0
         self.entry_size = 20

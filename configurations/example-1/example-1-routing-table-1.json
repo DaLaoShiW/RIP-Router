@@ -2,13 +2,13 @@
     "2": {
         "first_hop": 2,
         "cost": 1,
-        "learned=from": "N/A",
+        "learned_from": "N/A",
         "time": 0
     },
     "3": {
         "first_hop": 3,
         "cost": 5,
-        "learned=from": "N/A",
+        "learned_from": "N/A",
         "time": 0
     }
 }
