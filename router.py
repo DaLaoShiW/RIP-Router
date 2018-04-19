@@ -20,7 +20,12 @@ def simplified_socket_str(a_socket):
 socket.__str__ = simplified_socket_str
 socket.__repr__ = simplified_socket_str
 
-
+# TODO: check code coverage when example-1 network is used.
+# Does example-1's network configuration test all aspects and possible scenarios of RIP?
+# Is every if statement entered?
+# Might have to add print statements to manually check. OR at the important logic 'checkpoints' such as the various
+# if statements in router.process_inputs(), append something meaningful to a file to indicate that that checkpoint
+# was reached. Then after all routers have converged, check the file.
 class Router:
     INFINITY = 16
     READ_TIMEOUT = 2  # How long in seconds a router should wait for sockets to be ready to be read from.
