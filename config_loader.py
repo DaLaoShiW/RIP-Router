@@ -17,7 +17,7 @@ class Loader:
     def __init__(self, config_lines, router):
         self.config_lines = config_lines
         self.line_number = 1
-        # Map configuration settings to processing functions
+        # Map configuration settings to processing functions.
         self.config_functions = {
             "router-id": self.process_router_id,
             "input-ports": self.process_input_ports,
@@ -29,14 +29,14 @@ class Loader:
     def load(self):
         """ Load the configuration and set the router's variables """
         for line in self.config_lines:
-            line = " ".join(line.split())  # Remove all leading, trailing, and consecutive whitespace
-            # Ignore any lines that are comments
-            if line[0] != "#":
+            line = " ".join(line.split())  # Remove all leading, trailing, and consecutive whitespace.
+            # Ignore any lines that are comments.
+            if line and line[0] != "#":
                 parts = line.split(" ")
                 if parts[0] not in self.config_functions:
                     print("Unknown config setting: " + parts[0])
                 else:
-                    # Process the line using the relevant function
+                    # Process the line using the relevant function.
                     try:
                         self.config_functions[parts[0]](line)
                     except ValueError as value_error:
@@ -49,7 +49,8 @@ class Loader:
         if self.router.update_period is None:
             self.router.update_period = self.DEFAULT_UPDATE_PERIOD
             self.router.timeout_length = self.DEFAULT_UPDATE_PERIOD * self.TIMEOUT_UPDATE_RATIO
-            self.router.deletion_length = self.DEFAULT_UPDATE_PERIOD * self.DELETION_UPDATE_RATIO
+            deletion_after_timeout = self.DEFAULT_UPDATE_PERIOD * self.DELETION_UPDATE_RATIO
+            self.router.deletion_length = self.router.timeout_length + deletion_after_timeout
 
         if all([self.router.id, self.router.input_ports, self.router.outputs]):
             print("Configuration loaded!")
@@ -59,7 +60,7 @@ class Loader:
             print("Incomplete configuration, 'router-id', 'input-ports', and 'outputs' required")
             self.print_config_values()
             print()
-            exit(1)
+            exit(10)
 
     def print_config_values(self):
         """ Print the router's values, obtained from the config file """
@@ -69,7 +70,8 @@ class Loader:
             ("Input Ports", self.router.input_ports),
             ("Output Routers", self.router.outputs),
             ("Update Period", self.router.update_period),
-            ("Timeout Length", self.router.timeout_length)
+            ("Timeout Length", self.router.timeout_length),
+            ("Garbage Collection Timeout Length", self.router.deletion_length)
         ]
         print(*[title + ": " + str(value) for title, value in config_values], sep=os.linesep)
         print("-" * 40)
@@ -85,7 +87,7 @@ class Loader:
 
     def process_input_ports(self, line):
         """ Set the input-ports for the router """
-        parts = " ".join(line.split(" ")[1:]).split(",")  # Remove 'input-ports' and split on commas
+        parts = " ".join(line.split(" ")[1:]).split(",")  # Remove 'input-ports' and split on commas.
         if not any(parts):
             raise ValueError("No input-ports given")
         for port in parts:
@@ -94,7 +96,7 @@ class Loader:
 
     def process_outputs(self, line):
         """ Set and format neighbor routers (outputs) and their costs/router-ids """
-        parts = " ".join(line.split(" ")[1:]).split(",")  # Remove 'outputs' and split on commas
+        parts = " ".join(line.split(" ")[1:]).split(",")  # Remove 'outputs' and split on commas.
         if not any(parts):
             raise ValueError("No outputs given")
         for output in parts:
@@ -116,7 +118,8 @@ class Loader:
             raise ValueError("No update-period given")
         self.router.update_period = self.validate_update_period(parts[1].strip())
         self.router.timeout_length = self.TIMEOUT_UPDATE_RATIO * self.router.update_period
-        self.router.deletion_length = self.DELETION_UPDATE_RATIO * self.router.update_period
+        deletion_after_timeout = self.DEFAULT_UPDATE_PERIOD * self.DELETION_UPDATE_RATIO
+        self.router.deletion_length = self.router.timeout_length + deletion_after_timeout
 
     def validate_router_id(self, router_id):
         """ Validate a router-id """
