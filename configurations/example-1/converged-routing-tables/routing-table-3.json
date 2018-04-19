@@ -1,0 +1,22 @@
+{
+    "1": {
+        "first-hop": 2,
+        "cost": 3,
+        "timer": 0
+    },
+    "2": {
+        "first-hop": 2,
+        "cost": 2,
+        "timer": 0
+    },
+    "4": {
+        "first-hop": 2,
+        "cost": 3,
+        "timer": 0
+    },
+    "5": {
+        "first-hop": 5,
+        "cost": 3,
+        "timer": 0
+    }
+}
