@@ -1,1 +1,0 @@
-for /l %%x in (1, 1, 5) do start cmd /k python router.py ./configurations/example-1/example-1-config-%%x.txt
