@@ -1,13 +1,13 @@
-import sys
 import json
 import random
 import time
-import os
 from collections import OrderedDict
+from packet import *
 from select import select
+import sys
+import os
 
 from config_loader import Loader
-from packet import *
 
 
 def simplified_socket_str(a_socket):
@@ -23,17 +23,17 @@ socket.__repr__ = simplified_socket_str
 
 class Router:
     INFINITY = 16
-
-    READ_TIMEOUT = 2  # How long the router should wait for sockets to be ready to be read from
+    READ_TIMEOUT = 2  # How long in seconds a router should wait for sockets to be ready to be read from.
 
     def __init__(self, config_lines):
         self.id = None
         self.input_ports = []
-        self.outputs = {}
+        self.outputs = {}  # Directly connected routers. Map ids to (port, cost) pairs.
         self.update_period = None
         self.timeout_length = None
         self.deletion_length = None
-        # Assign all variables above
+
+        # Assign all above variables.
         self.config_loader = Loader(config_lines, self)
         self.config_loader.load()
 
@@ -41,140 +41,253 @@ class Router:
         self.routing_table = {}
 
         self.time_of_last_update = time.time()
-        self.triggered_updates = []  # List of router ids
+        self.triggered_updates = []  # List of destination router ids.
+
+        self.config_dir = None
+
+    def check_if_converged(self):
+        """ Check to see if the routing table has converged to the expected routing table, if one exists. """
+        if os.path.isdir(self.config_dir + "/converged-routing-tables"):
+            routing_table_path = "/converged-routing-tables/routing-table-" + str(self.id) + ".json"
+            with open(self.config_dir + routing_table_path) as expected_routing_table_file:
+                expected_routing_table = json.load(expected_routing_table_file)
+                simplified_routing_table = json.loads(json.dumps(self.routing_table))
+                matching = True
+                for dest_id in expected_routing_table_file:
+                    if dest_id not in simplified_routing_table:
+                        matching = False
+                        break
+                    our_entry = simplified_routing_table[dest_id]
+                    expected_entry = expected_routing_table[dest_id]
+                    matching = our_entry[RouteInfos.FIRST_HOP] == expected_entry[RouteInfos.FIRST_HOP]
+                    if not matching:
+                        break
+                    matching = our_entry[RouteInfos.COST] == expected_entry[RouteInfos.COST]
+                    if not matching:
+                        break
+                if matching:
+                    print("== Routing table matches expected routing table ==")
 
     def bind_sockets(self):
-        """ Bind sockets to input ports """
-        # TODO: use try except block to gracefully handle socket errors such as ports already bound
+        """ Bind sockets to input ports. """
         for input_port in self.input_ports:
             a_socket = socket(AF_INET, SOCK_DGRAM)
-            a_socket.bind(("localhost", input_port))
+            try:
+                a_socket.bind(("localhost", input_port))
+            except OSError:
+                print("Could not bind socket to port " + str(input_port) + ". A socket is already bound to this port.")
+                exit(12)
             self.input_sockets[input_port] = a_socket
 
     def initialise_routing_table(self):
-        """  Initialise the router's routing table """
+        """  Initialise the router's routing table. """
         os.makedirs(os.path.dirname("./json-memory/"), exist_ok=True)
-        with open("./json-memory/routing-table-" + str(self.id) + ".json", "w+") as routing_table_file:
+        with open("./json-memory/routing-table-" + str(self.id) + ".json", "a+") as routing_table_file:
+            routing_table_file.seek(0)
             if routing_table_file.readlines():
-                # routing_table_json = json.load(routing_table_file)
-                # TODO: check if this json contains at least the info from 'outputs' (might contain more info)
-                pass
+                print("Loading routing table from memory.")
+                routing_table_file.seek(0)
+
+                def object_hook(d):
+                    if set(d.keys()) == {RouteInfos.FIRST_HOP, RouteInfos.COST, RouteInfos.TIMER}:
+                        return OrderedDict(
+                            [(RouteInfos.FIRST_HOP, d[RouteInfos.FIRST_HOP]),
+                                (RouteInfos.COST, d[RouteInfos.COST]),
+                                (RouteInfos.TIMER, d[RouteInfos.TIMER])]
+                        )
+                    else:
+                        return {int(k) if str(k).isdigit() else k: v for k, v in d.items()}
+                self.routing_table = json.load(
+                    routing_table_file,
+                    object_hook=object_hook
+                )
             else:
-                routing_table = {}
-
                 for router_id in self.outputs:
-                    inner_object = OrderedDict([
-                        ("first_hop", router_id),
-                        ("cost", self.outputs[router_id][1]),
-                        ("learned_from", "N/A"),
-                        ("time", 0)
-                    ])
-                    row = {router_id: inner_object}
-                    routing_table.update(row)
+                    self.update_routing_table_entry(router_id, router_id, self.outputs[router_id][1], 0)
+        self.save_routing_table()
 
-                json.dump(routing_table, routing_table_file, indent=4)
-                self.routing_table = routing_table
+    def save_routing_table(self):
+        """ Save this router's routing table to memory. """
+        with open("./json-memory/routing-table-" + str(self.id) + ".json", "w") as routing_table_file:
+            json.dump(self.routing_table, routing_table_file, indent=4)
 
-    def run(self):
-        """ Check and process incoming packets (select) and timing events."""
-        if self.triggered_updates:
-            self.send_updates(self.triggered_updates)
-            self.triggered_updates = []
+    def print_routing_table(self):
+        """ Print this router's routing table, in a table format. """
+        table = ""
+        row_format = "{:" + str(len("Destination")) + "} | {:" + str(len("First hop")) + "} {:" + str(len("Cost")) + "}"
+        table += row_format.format("Destination", "First hop", "Cost")
+        for dest_id, route_info in self.routing_table.items():
+            table += "\n" + row_format.format(dest_id, route_info[RouteInfos.FIRST_HOP], route_info[RouteInfos.COST])
+        print(table)
 
-        if time.time() - self.time_of_last_update >= self.update_period:
-            print("\tTime to send updates! --->")
+    def update_routing_table_entry(self, router_id, first_hop=None, cost=None, timer=None):
+        """ Update or create a particular routing table entry, with given new values. """
+        if router_id in self.routing_table:
+            entry = self.routing_table[router_id]
+            entry[RouteInfos.FIRST_HOP] = first_hop if first_hop is not None else entry[RouteInfos.FIRST_HOP]
+            entry[RouteInfos.COST] = cost if cost is not None else entry[RouteInfos.COST]
+            entry[RouteInfos.TIMER] = timer if timer is not None else entry[RouteInfos.TIMER]
+            self.routing_table.update({router_id: entry})
+        elif {first_hop, cost, timer} == {None}:
+            raise ValueError(
+                "If a destination router id not already in the routing table is given, "
+                "then all fields (function arguments) must be defined "
+            )
+        else:
+            entry = OrderedDict(
+                [(RouteInfos.FIRST_HOP, first_hop),
+                    (RouteInfos.COST, cost),
+                    (RouteInfos.TIMER, timer)]
+            )
+            self.routing_table.update({router_id: entry})
 
-            routers_to_delete = []
-            # Checking times and stuff
-            for router_id, row in self.routing_table.items():
-                updated_row = row
-                updated_row['time'] = row['time'] + time.time() - self.time_of_last_update
+    def update_routing_table_timing(self):
+        """ Update the router's routing table, based on timing configuration. """
+        # Keep track of the routes that need to be deleted from the routing table.
+        routes_to_delete = []
+        # Iterate over entries in the routing table.
+        for router_id, route_info in self.routing_table.items():
+            # Update the route's timer field.
+            self.update_routing_table_entry(
+                router_id,
+                timer=route_info[RouteInfos.TIMER] + time.time() - self.time_of_last_update
+            )
+            # If the route info has timed out (and wasn't already), set the route's cost to infinity.
+            timed_out = route_info[RouteInfos.TIMER] >= self.timeout_length
+            if timed_out and route_info[RouteInfos.COST] != self.INFINITY:
+                self.update_routing_table_entry(router_id, cost=self.INFINITY)
+            # Flag the route for deletion if its update timer field is sufficiently large.
+            # Cannot delete them from the routing table now, since it is being iterated over.
+            deletion_timed_out = route_info[RouteInfos.TIMER] >= self.deletion_length
+            if route_info[RouteInfos.COST] == self.INFINITY and deletion_timed_out:
+                routes_to_delete.append(router_id)
+        # Delete any and all routes from the routing table, that were flagged for deletion.
+        for router_id in routes_to_delete:
+            self.routing_table.pop(router_id)
+        self.save_routing_table()
 
-                if row['cost'] != self.INFINITY and updated_row['time'] >= self.timeout_length:
-                    updated_row['cost'] = self.INFINITY
-                    self.triggered_updates.append(router_id)
+    def send_updates(self, destination_router_ids):
+        """ Send a RIP update packet for each given destination router id to all outputs (neighbours). """
+        # Remove duplicate router ids.
+        destination_router_ids = set(destination_router_ids)
+        for neighbour_id, (port, cost) in self.outputs.items():
+            # Create the RIP packet to send to this output.
+            rip_packet = RIPPacket()
+            # Add entries to the RIP packet.
+            for destination_router_id in destination_router_ids:
+                if destination_router_id not in self.routing_table:
+                    continue
+                route_info = self.routing_table[destination_router_id]
+                # Add the entry, with a cost of infinity if the first hop to the destination is the router this packet
+                # is being sent to (split horizon with poisoned reverse).
+                rip_packet.add_entry(
+                    destination_router_id,
+                    self.INFINITY if route_info[RouteInfos.FIRST_HOP] == neighbour_id else route_info[RouteInfos.COST]
+                )
+            rip_packet.send(port, self.id)
 
-                needs_deletion = updated_row['time'] >= self.timeout_length + self.deletion_length
-
-                if updated_row['cost'] == self.INFINITY and needs_deletion:
-                    routers_to_delete.append(router_id)
-
-                updated_row = { router_id: updated_row }
-                self.routing_table.update(updated_row)
-
-            for router_id in routers_to_delete:
-                self.routing_table.pop(router_id)
-
-            self.send_updates(self.routing_table.keys())
-
-            self.time_of_last_update = time.time() + random.randint(-5, 5)
-
+    def process_inputs(self):
+        """ Process any and all inputs from neighbour routers. Updating routing table where necessary. """
+        # Read any and all information from input sockets.
         read_ready = select(self.input_sockets.values(), [], [], self.READ_TIMEOUT)[0]
-        for a_socket in read_ready:
-            buffer = a_socket.recv(512)
+        for input_socket in read_ready:
+            # Form a RIP Packet from the input socket's buffer.
+            buffer = input_socket.recv(512)
             rip_packet = RIPPacket(buffer)
+            # TODO: basic error checking. e.g. fixed with fields expected values, check ids.
 
+            # Get the id of the input (neighbour) router that has sent the update.
             input_router_id = rip_packet.from_router_id
+            # Get the cost of the route to the input router that has sent the update.
             input_router_cost = self.outputs[input_router_id][1]
 
-            self.routing_table[input_router_id]['time'] = 0
+            # Reset the timer field of the route to the input router, as this update verifies it is still alive.
+            self.update_routing_table_entry(input_router_id, timer=0)
 
             for entry in rip_packet.entries:
+                destination_router_id = entry["router_id"]
 
-                new_cost = min(input_router_cost + entry['cost'], self.INFINITY)
+                # If the entry's cost is over infinity, set it to infinity.
+                if entry[RouteInfos.COST] > self.INFINITY:
+                    print("<--- Received a RIP packet entry with a cost larger than infinity.")
+                    entry[RouteInfos.COST] = self.INFINITY
 
-                existing_cost = self.INFINITY
-                existing_first_hop = input_router_id
-
-                timer = 0
-
-                if entry['router_id'] in self.routing_table:
-                    existing_entry = self.routing_table[entry['router_id']]
-                    existing_cost = existing_entry['cost']
-                    existing_first_hop = existing_entry['first_hop']
-                    timer = existing_entry['time']
-
-                if new_cost == self.INFINITY and existing_cost != self.INFINITY:
-                    timer = self.timeout_length
-                    self.triggered_updates.append(entry['router_id'])
-
-                if entry['router_id'] == self.id:
+                # If the entry's destination router id is this router, skip the entry.
+                if destination_router_id == self.id:
                     continue
 
-                if new_cost != self.INFINITY and new_cost == existing_cost and existing_first_hop == input_router_id:
-                    self.routing_table[entry['router_id']]['time'] = 0
-                    continue
+                # Get the update cost of the route based on the cost to the input router, and the input routers cost of
+                # the route, limited to infinity.
+                update_cost = min(input_router_cost + entry[RouteInfos.COST], self.INFINITY)
 
-                if new_cost < existing_cost or (new_cost != existing_cost and existing_first_hop == input_router_id):
+                if destination_router_id not in self.routing_table:
+                    if update_cost != self.INFINITY:
+                        # The entry describes a reachable route this router does not have,
+                        # so add the route to the rotuing table.
+                        self.update_routing_table_entry(
+                            destination_router_id,
+                            first_hop=input_router_id,
+                            cost=update_cost,
+                            timer=0
+                        )
+                        # This router has discovered a new route, so add it to the triggered update queue.
+                        self.triggered_updates.append(destination_router_id)
+                else:
+                    existing_route_info = self.routing_table[destination_router_id]
+                    input_is_first_hop = input_router_id == existing_route_info[RouteInfos.FIRST_HOP]
 
-                    if new_cost != self.INFINITY:
-                        timer = 0
+                    if input_is_first_hop and update_cost != self.INFINITY:
+                        # At the very least, even if the cost hasn't changed, the route's timer should be reset.
+                        self.update_routing_table_entry(destination_router_id, timer=0)
 
-                    inner_object = OrderedDict([
-                        ("first_hop", input_router_id),
-                        ("cost", new_cost),
-                        ("learned_from", input_router_id),
-                        ("time", timer)
-                    ])
-                    row = {entry['router_id']: inner_object}
+                    cost_changed = update_cost != existing_route_info[RouteInfos.COST]
+                    cost_lower = update_cost < existing_route_info[RouteInfos.COST]
+                    if (input_is_first_hop and cost_changed) or cost_lower:
+                        self.update_routing_table_entry(
+                            destination_router_id,
+                            first_hop=input_router_id,
+                            cost=update_cost,
+                            timer=self.timeout_length if update_cost == self.INFINITY else 0
+                        )
+                        # This router has changed a route, so add it to the triggered update queue.
+                        self.triggered_updates.append(destination_router_id)
 
-                    self.routing_table.update(row)
+        # Only print and save routing table if there was at least one input to process.
+        if read_ready:
+            print("<--- Processed inputs. Routing table:")
+            self.print_routing_table()
+            self.save_routing_table()
 
-            print("Routing Table: ", json.dumps(self.routing_table, indent=4))
+    def run(self):
+        """ Process outputs and inputs. Send any triggered updates and handle timing and garbage collection. """
+        while True:
+            try:  # Temporary. To avoid Windows 10 bug when using print() statements to cmd.exe stdout.
+                # If there is any router ids in the triggered update queue, send the updates.
+                if self.triggered_updates:
+                    print("\t---> Triggered update. Sending routing table to all neighbours.")
+                    self.send_updates(self.triggered_updates)
+                    # Clear the queue.
+                    self.triggered_updates = []
 
-    def send_updates(self, router_ids):
-        router_ids = set(router_ids)
-        for output in self.outputs.values():
-            rip_packet = RIPPacket()
+                # If it is time to send updates, update the routing table, then send it.
+                if time.time() - self.time_of_last_update >= self.update_period:
+                    print("\t---> Updating routing table based on timeouts.")
+                    self.update_routing_table_timing()
+                    print("\t---> Sending routing table to all neighbours.")
+                    self.send_updates(self.routing_table.keys())
+                    self.time_of_last_update = time.time() + random.randint(-5, 5)
+                    self.check_if_converged()
 
-            for router_id in router_ids:
-                if router_id not in self.routing_table.keys():
-                    continue
-                row = self.routing_table[router_id]
-                # Split Horizon with Poisoned Reverse
-                rip_packet.add_entry(router_id, self.INFINITY if row['learned_from'] == router_id else row['cost'])
+                self.process_inputs()
+            except OSError:
+                pass
 
-            rip_packet.send(output[0], self.id)
+
+# Enum for safer referral to routing table field names.
+class RouteInfos:
+    FIRST_HOP = "first-hop"
+    COST = "cost"
+    TIMER = "timer"
 
 
 def main():
@@ -184,16 +297,15 @@ def main():
         return
 
     config_filename = args[1]
-    with open(config_filename, "r") as config_file:
+    with open(config_filename) as config_file:
         config_lines = config_file.readlines()
 
     router = Router(config_lines)
+    router.config_dir = "/".join(config_filename.split("/")[:-1])
     router.bind_sockets()
     router.initialise_routing_table()
-    print(router.routing_table)
 
-    while True:
-        router.run()
+    router.run()
 
 
 if __name__ == "__main__":
