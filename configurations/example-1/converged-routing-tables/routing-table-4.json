@@ -1,22 +1,18 @@
 {
     "1": {
         "first-hop": 2,
-        "cost": 2,
-        "timer": 0
+        "cost": 2
     },
     "2": {
         "first-hop": 2,
-        "cost": 1,
-        "timer": 0
+        "cost": 1
     },
     "3": {
         "first-hop": 2,
-        "cost": 3,
-        "timer": 0
+        "cost": 3
     },
     "5": {
         "first-hop": 2,
-        "cost": 6,
-        "timer": 0
+        "cost": 6
     }
 }
