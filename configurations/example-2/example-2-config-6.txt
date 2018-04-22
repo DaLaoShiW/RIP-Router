@@ -1,0 +1,4 @@
+router-id 6
+input-ports 9063, 9061
+outputs 9036/1/3, 9016/2/1
+update-period 5

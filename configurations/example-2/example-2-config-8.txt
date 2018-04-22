@@ -1,0 +1,4 @@
+router-id 8
+input-ports 9081
+outputs 9018/2/1
+update-period 5
