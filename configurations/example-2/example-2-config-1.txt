@@ -1,4 +1,6 @@
+# Visualise and analyse this network at http://graphonline.ru/en/?graph=rtHqYwzsambNBQNG
+
 router-id 1
-input-ports 9013, 9014, 9012, 9016, 9018
-outputs 9031/1/3, 9041/4/4, 9021/3/2, 9061/2/6, 9081/2/8
+input-ports 9018, 9016, 9012, 9013, 9014
+outputs 9081/1/8, 9061/4/6, 9021/1/2, 9031/3/3, 9041/4/4
 update-period 5
