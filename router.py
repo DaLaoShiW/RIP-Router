@@ -214,12 +214,13 @@ class Router:
                 "Processing routing update packet from router",
                 input_router_id, "from port", input_socket.getsockname()[1]
             )
+            
             # Get the cost of the route to the input router that has sent the update.
             input_router_cost = self.outputs[input_router_id][1]
-
-            # Reset the timer/cost field of the route to the input router, as this update verifies it is still alive.
+            # Reset the timer field of the route to the input router, as this update verifies it is still alive.
             # If this router's known link cost is less than the existing route, update the cost.
-            input_router_cost_update = None if self.routing_table[input_router_id][RouteInfos.COST] <= input_router_cost else input_router_cost
+            current_input_router_cost = self.routing_table[input_router_id][RouteInfos.COST]
+            input_router_cost_update = None if current_input_router_cost <= input_router_cost else input_router_cost
             self.update_routing_table_entry(input_router_id, timer=0, cost=input_router_cost_update)
 
             for entry in rip_packet.entries:
