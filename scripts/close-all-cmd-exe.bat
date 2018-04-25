@@ -1,1 +1,0 @@
-Taskkill /IM cmd.exe
