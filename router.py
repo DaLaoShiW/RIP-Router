@@ -236,8 +236,8 @@ class Router:
             # Get the cost of the route to the input router that has sent the update.
             input_router_cost = self.outputs[input_router_id][1]
 
-            # Reset the timer field of the route to the input router, as this update verifies it is still alive.
-            self.update_routing_table_entry(input_router_id, timer=0)
+            # Reset the timer/cost field of the route to the input router, as this update verifies it is still alive.
+            self.update_routing_table_entry(input_router_id, timer=0, cost=input_router_cost)
 
             for entry in rip_packet.entries:
                 destination_router_id = entry["router_id"]
@@ -270,6 +270,7 @@ class Router:
                     self.log("Processing routing update packet entry for a route already in the routing table")
                     existing_route_info = self.routing_table[destination_router_id]
                     input_is_first_hop = input_router_id == existing_route_info[RouteInfos.FIRST_HOP]
+
                     if input_is_first_hop and update_cost != self.INFINITY:
                         # At the very least, even if the cost hasn't changed, the route's timer should be reset.
                         self.update_routing_table_entry(destination_router_id, timer=0)
