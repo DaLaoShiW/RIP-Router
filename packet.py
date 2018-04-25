@@ -6,8 +6,8 @@ class Packet:
 
     def __init__(self):
         self.len_bytes = 0
-        self.byte_format = "" # A format string used by struct to pack and unpack values
-        self.field_names = [] # The names of fields in this packet's format
+        self.byte_format = ""  # A format string used by struct to pack and unpack values
+        self.field_names = []  # The names of fields in this packet's format
 
     def __len__(self):
         return self.len_bytes
@@ -71,10 +71,10 @@ class RIPPacket(Packet):
         self.from_router_id = None
         self.entries = []
         self.num_entries = 0
-        self.entry_size = 20 # Size in bytes of a RIP entry
-        self.header_size = 4 # Size in bytes of RIP header
-        self.command = 2 # RIP Command: 2 is 'response'
-        self.version = 2 # RIP version
+        self.entry_size = 20  # Size in bytes of a RIP entry
+        self.header_size = 4  # Size in bytes of RIP header
+        self.command = 2  # RIP Command: 2 is 'response'
+        self.version = 2  # RIP version
 
         # Add header fields to packet format
         self.format_int8("command")
@@ -87,7 +87,7 @@ class RIPPacket(Packet):
     def add_entry(self, router_id, cost):
         """ Add a RIP entry to this packet """
         self.entries.append({
-            "afi": 2, # AF_INET
+            "afi": 2,  # AF_INET
             "router_id": router_id,
             "cost": cost,
         })
