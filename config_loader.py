@@ -48,9 +48,7 @@ class Loader:
 
         if self.router.update_period is None:
             self.router.update_period = self.DEFAULT_UPDATE_PERIOD
-            self.router.timeout_length = self.DEFAULT_UPDATE_PERIOD * self.TIMEOUT_UPDATE_RATIO
-            deletion_after_timeout = self.DEFAULT_UPDATE_PERIOD * self.DELETION_UPDATE_RATIO
-            self.router.deletion_length = self.router.timeout_length + deletion_after_timeout
+            self.process_timeouts()
 
         if all([self.router.id, self.router.input_ports, self.router.outputs]):
             print("Configuration loaded!")
@@ -117,8 +115,11 @@ class Loader:
         elif len(parts) < 2:
             raise ValueError("No update-period given")
         self.router.update_period = self.validate_update_period(parts[1].strip())
-        self.router.timeout_length = self.TIMEOUT_UPDATE_RATIO * self.router.update_period
-        deletion_after_timeout = self.DEFAULT_UPDATE_PERIOD * self.DELETION_UPDATE_RATIO
+        self.process_timeouts()
+
+    def process_timeouts(self):
+        self.router.timeout_length = self.router.update_period * self.TIMEOUT_UPDATE_RATIO
+        deletion_after_timeout = self.router.update_period * self.DELETION_UPDATE_RATIO
         self.router.deletion_length = self.router.timeout_length + deletion_after_timeout
 
     def validate_router_id(self, router_id):
