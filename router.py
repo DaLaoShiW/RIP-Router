@@ -11,17 +11,6 @@ import os
 from config_loader import Loader
 
 
-def simplified_ordered_dict_str(ordered_dict):
-    try:
-        return "{" + RouteInfos.FIRST_HOP + ": " + str(ordered_dict[RouteInfos.FIRST_HOP]) + ", " + \
-               RouteInfos.COST + ": " + str(ordered_dict[RouteInfos.COST]) + ", " + \
-               RouteInfos.TIMER + ": " + str(ordered_dict[RouteInfos.TIMER]) + "}"
-    except KeyError:
-        return repr(ordered_dict)
-
-OrderedDict.__str__ = simplified_ordered_dict_str
-
-
 class Router:
     INFINITY = 16
     READ_TIMEOUT = 1  # How long in seconds a router should wait for sockets to be ready to be read from.
@@ -104,11 +93,7 @@ class Router:
 
                 def object_hook(d):
                     if set(d.keys()) == {RouteInfos.FIRST_HOP, RouteInfos.COST, RouteInfos.TIMER}:
-                        return OrderedDict(
-                            [(RouteInfos.FIRST_HOP, d[RouteInfos.FIRST_HOP]),
-                                (RouteInfos.COST, d[RouteInfos.COST]),
-                                (RouteInfos.TIMER, d[RouteInfos.TIMER])]
-                        )
+                        return RouteInfo(d[RouteInfos.FIRST_HOP], d[RouteInfos.COST], d[RouteInfos.TIMER])
                     else:
                         return {int(k) if str(k).isdigit() else k: v for k, v in d.items()}
                 self.routing_table = json.load(
@@ -156,11 +141,7 @@ class Router:
                 "then all fields (function arguments) must be defined "
             )
         else:
-            entry = OrderedDict(
-                [(RouteInfos.FIRST_HOP, first_hop),
-                    (RouteInfos.COST, cost),
-                    (RouteInfos.TIMER, timer)]
-            )
+            entry = RouteInfo(first_hop, cost, timer)
             self.routing_table.update({router_id: entry})
             self.log("Created new routing table entry for a route to", str(router_id) + "\nNew:", entry)
 
@@ -328,6 +309,23 @@ class RouteInfos:
     FIRST_HOP = "first-hop"
     COST = "cost"
     TIMER = "timer"
+
+
+class RouteInfo(OrderedDict):
+    def __init__(self, first_hop, cost, timer=0):
+        super().__init__(
+            [(RouteInfos.FIRST_HOP, first_hop),
+             (RouteInfos.COST, cost),
+             (RouteInfos.TIMER, timer)]
+        )
+
+    def __str__(self):
+        try:
+            return "{" + RouteInfos.FIRST_HOP + ": " + str(self[RouteInfos.FIRST_HOP]) + ", " + \
+                   RouteInfos.COST + ": " + str(self[RouteInfos.COST]) + ", " + \
+                   RouteInfos.TIMER + ": " + str(self[RouteInfos.TIMER]) + "}"
+        except KeyError:
+            return repr(self)
 
 
 def main():
