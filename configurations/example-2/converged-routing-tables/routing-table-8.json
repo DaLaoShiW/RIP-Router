@@ -1,0 +1,34 @@
+{
+	"1": {
+		"first-hop": 1,
+		"cost": 2
+	},
+	"2": {
+		"first-hop": 1,
+		"cost": 6
+	},
+	"3": {
+		"first-hop": 1,
+		"cost": 4
+	},
+	"4": {
+		"first-hop": 1,
+		"cost": 6
+	},
+	"5": {
+		"first-hop": 1,
+		"cost": 7
+	},
+	"6": {
+		"first-hop": 1,
+		"cost": 5
+	},
+	"7": {
+		"first-hop": 1,
+		"cost": 5
+	},
+	"9": {
+		"first-hop": 1,
+		"cost": 9
+	}
+}
