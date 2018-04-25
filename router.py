@@ -86,6 +86,18 @@ class Router:
     def initialise_routing_table(self):
         """  Initialise the router's routing table. """
         os.makedirs(os.path.dirname("./router-memory/"), exist_ok=True)
+
+        # Read the last config directory opened, clear router memory if this is a different config
+        if os.path.isfile("./router-memory/last-config-dir"):
+            with open("./router-memory/last-config-dir", 'r+') as last_config_dir:
+                if self.config_dir != last_config_dir.readline():
+                    [os.remove(os.path.join("./router-memory/", f)) for f in os.listdir("./router-memory/") if f.endswith(".json")]
+
+        # Write current config dir to router-memory
+        with open("./router-memory/last-config-dir", 'w') as new_config_dir:
+            new_config_dir.write(self.config_dir)
+            new_config_dir.close()
+
         with open("./router-memory/routing-table-" + str(self.id) + ".json", "a+") as routing_table_file:
             routing_table_file.seek(0)
             if routing_table_file.readlines() and self.load:
