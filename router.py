@@ -327,6 +327,9 @@ class RouteInfo(OrderedDict):
         except KeyError:
             return repr(self)
 
+    def copy(self):
+        return RouteInfo(self[RouteInfos.FIRST_HOP], self[RouteInfos.COST], self[RouteInfos.TIMER])
+
 
 def main():
     args = sys.argv
