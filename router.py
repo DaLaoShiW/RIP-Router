@@ -237,7 +237,9 @@ class Router:
             input_router_cost = self.outputs[input_router_id][1]
 
             # Reset the timer/cost field of the route to the input router, as this update verifies it is still alive.
-            self.update_routing_table_entry(input_router_id, timer=0, cost=input_router_cost)
+            # If this router's known link cost is less than the existing route, update the cost.
+            input_router_cost_update = None if self.routing_table[input_router_id][RouteInfos.COST] <= input_router_cost else input_router_cost
+            self.update_routing_table_entry(input_router_id, timer=0, cost=input_router_cost_update)
 
             for entry in rip_packet.entries:
                 destination_router_id = entry["router_id"]
@@ -293,6 +295,7 @@ class Router:
         if read_ready:
             print("<--- Processed input. Routing table:")
             print(self.get_string_routing_table())
+            self.check_if_converged()
             self.save_routing_table()
 
     def run(self):
@@ -316,7 +319,6 @@ class Router:
                     self.log("Sending routing table to all neighbours")
                     self.send_updates(self.routing_table.keys())
                     self.time_of_last_update = int(time.time()) + random.randint(-5, 5)
-                    self.check_if_converged()
 
                 self.process_inputs()
             except OSError:
