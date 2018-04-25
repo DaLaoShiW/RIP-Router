@@ -17,11 +17,15 @@ max_cost = 4
 
 
 class Edge(frozenset):
+    def __init__(self, one_node, another_node):
+        super().__init__([one_node, another_node])
+
     def __str__(self):
         return set(map(str, self))
 
     def __repr__(self):
         return str(set(map(str, self)))
+
 
 config_path = "../configurations/example-" + example_num + "/"
 if os.path.isdir(config_path):
@@ -36,7 +40,7 @@ for line in inp.strip().splitlines():
     router = parts[0]
     neighbours = set(parts[1].split(","))
     for neighbour in neighbours:
-        edge = Edge(frozenset([router, neighbour]))
+        edge = Edge(router, neighbour)
         edge_costs[edge] = random.randint(min_cost, max_cost)
 edge_costs = OrderedDict(edge_costs)
 
@@ -82,7 +86,7 @@ for router in connections:
     config = config[:-2]
     config += "\noutputs "
     for neighbour in connections[router]:
-        cost = edge_costs[Edge(frozenset([router, neighbour]))]
+        cost = edge_costs[Edge(router, neighbour)]
         config += "90" + neighbour + router + "/" + str(cost) + "/" + neighbour + ", "
     config = config[:-2]
     config += "\nupdate-period " + update_period
