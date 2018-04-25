@@ -33,6 +33,7 @@ class Router:
         self.time_of_last_update = int(time.time())
         self.triggered_updates = []  # List of destination router ids.
 
+        self.load = False
         self.config_dir = None
 
         self.log("Router created with id", self.id)
@@ -87,7 +88,7 @@ class Router:
         os.makedirs(os.path.dirname("./router-memory/"), exist_ok=True)
         with open("./router-memory/routing-table-" + str(self.id) + ".json", "a+") as routing_table_file:
             routing_table_file.seek(0)
-            if routing_table_file.readlines():
+            if routing_table_file.readlines() and self.load:
                 print("Loading routing table from memory")
                 routing_table_file.seek(0)
 
@@ -109,7 +110,8 @@ class Router:
 
     def save_routing_table(self):
         """ Save this router's routing table to memory. """
-        with open("./router-memory/routing-table-" + str(self.id) + ".json", "w") as routing_table_file:
+        os.makedirs(os.path.dirname("./router-memory/"), exist_ok=True)
+        with open("./router-memory/routing-table-" + str(self.id) + ".json", "w+") as routing_table_file:
             json.dump(self.routing_table, routing_table_file, indent=4)
         self.log("Saved routing table to memory")
 
@@ -214,7 +216,7 @@ class Router:
                 "Processing routing update packet from router",
                 input_router_id, "from port", input_socket.getsockname()[1]
             )
-            
+
             # Get the cost of the route to the input router that has sent the update.
             input_router_cost = self.outputs[input_router_id][1]
             # Reset the timer field of the route to the input router, as this update verifies it is still alive.
@@ -346,6 +348,7 @@ def main():
 
     router = Router(config_lines)
     router.config_dir = "/".join(config_filename.split("/")[:-1])
+    router.load = len(args) == 3 and args[2].lower() == "load"
     router.bind_input_sockets()
     router.initialise_routing_table()
 
