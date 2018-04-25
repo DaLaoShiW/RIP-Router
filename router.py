@@ -180,6 +180,8 @@ class Router:
             if timed_out and route_info[RouteInfos.COST] != self.INFINITY:
                 self.log("Setting cost of route to", router_id, "to infinity, since it has timed out")
                 self.update_routing_table_entry(router_id, cost=self.INFINITY)
+                # Sending a triggered update here is redundant, as this method is always called before sending updates
+
             # Flag the route for deletion if its update timer field is sufficiently large.
             # Cannot delete them from the routing table now, since it is being iterated over.
             deletion_timed_out = route_info[RouteInfos.TIMER] >= self.deletion_length
@@ -257,16 +259,13 @@ class Router:
                     if update_cost != self.INFINITY:
                         self.log("Processing routing update packet entry for a route not yet in the routing table")
                         # The entry describes a reachable route this router does not have,
-                        # so add the route to the rotuing table.
+                        # so add the route to the routing table.
                         self.update_routing_table_entry(
                             destination_router_id,
                             first_hop=input_router_id,
                             cost=update_cost,
                             timer=0
                         )
-                        # This router has discovered a new route, so add it to the triggered update queue.
-                        self.log("Flagging route to", destination_router_id, "for triggered update")
-                        self.triggered_updates.append(destination_router_id)
                 else:
                     self.log("Processing routing update packet entry for a route already in the routing table")
                     existing_route_info = self.routing_table[destination_router_id]
@@ -285,9 +284,9 @@ class Router:
                             cost=update_cost,
                             timer=self.timeout_length if update_cost == self.INFINITY else 0
                         )
-                        # This router has changed a route, so add it to the triggered update queue.
-                        self.log("Flagging route to", destination_router_id, "for triggered update")
-                        self.triggered_updates.append(destination_router_id)
+                        if update_cost == self.INFINITY:
+                            self.log("Cost=INF. Flagging route to", destination_router_id, "for triggered update")
+                            self.triggered_updates.append(destination_router_id)
 
         # Only print and save routing table if there was at least one input to process.
         if read_ready:
