@@ -1,6 +1,7 @@
 import struct
 from socket import *
 
+
 class Packet:
 
     def __init__(self):
@@ -71,7 +72,7 @@ class Packet:
 class RIPPacket(Packet):
 
     RIP_VERSION = 2
-    RIP_COMMAND = 2 # RIP Command: 2 is 'response'
+    RIP_COMMAND = 2  # RIP Command: 2 is 'response'
     AF_INET = 2
 
     def __init__(self, byte_data=None):
@@ -125,11 +126,10 @@ class RIPPacket(Packet):
             if entry['afi'] != self.AF_INET:
                 return False
 
-            if not (entry['cost'] >= 1 and entry['cost'] <= 16):
+            if not (1 <= entry['cost'] <= 16):
                 return False
 
         return True
-
 
     def unpack(self, byte_data):
         """ Unpack byte_data to populate this RIP packet """
