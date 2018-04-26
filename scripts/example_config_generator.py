@@ -79,7 +79,7 @@ graph = dijkstras.Graph()
 for router_id in connections:
     graph.add_node(router_id)
 for edge, cost in edge_costs.items():
-    graph.add_edge(*edge, cost)
+    graph.add_edge(*edge, distance=cost)
 
 # Initialise both output matrices.
 num_routers = len(connections.keys())
