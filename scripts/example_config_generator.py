@@ -1,6 +1,8 @@
 import random
 import os
 import re
+import sys
+sys.path.append('../')
 
 from router import RouteInfos
 import dijkstras
@@ -8,15 +10,15 @@ import dijkstras
 # ////////////////////////////// OPTIONS \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ #
 # Router ids must be sequential, starting from 1, skipping no numbers.
 undirected_adjacency_list = """
-1:2,3,4,8
-2:9,5
-3:6,7
-4:2
-5:7,9,4
-6:1
+1:2w1,7w8
+2:3w3
+3:4w4
+4:7w6,5w2
+5:6w1
+6:1w5
 """
 
-example_num = "2"
+example_num = "3"
 update_period = "5"
 min_cost = 1
 max_cost = 4
@@ -61,9 +63,15 @@ for line in undirected_adjacency_list.strip().splitlines():
     line = line.strip()
     parts = line.split(":")
     router = parts[0]
-    neighbours = set(parts[1].split(","))
-    for neighbour in neighbours:
-        edge_costs[Edge(router, neighbour)] = random.randint(min_cost, max_cost)
+
+    full_neighbours = set(parts[1].split(","))
+    for neighbour in full_neighbours:
+        cost_parts = neighbour.split('w')
+        neighbour = cost_parts[0]
+        edge_costs[Edge(router, neighbour)] = int(cost_parts[1]) if len(cost_parts) > 1 else random.randint(min_cost, max_cost)
+
+    neighbours = set([part.split('w')[0] for part in parts[1].split(",")])
+
     if router not in connections:
         connections[router] = neighbours
     else:
