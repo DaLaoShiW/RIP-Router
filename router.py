@@ -222,10 +222,13 @@ class Router:
         # Read any and all information from input sockets.
         read_ready = select(self.input_sockets.values(), [], [], self.READ_TIMEOUT)[0]
         for input_socket in read_ready:
+
             # Form a RIP Packet from the input socket's buffer.
             buffer = input_socket.recv(512)
             rip_packet = RIPPacket(buffer)
-            # TODO: basic error checking. e.g. fixed with fields expected values, check ids.
+
+            if not rip_packet.validate():
+                continue
 
             # Get the id of the input (neighbour) router that has sent the update.
             input_router_id = rip_packet.from_router_id
