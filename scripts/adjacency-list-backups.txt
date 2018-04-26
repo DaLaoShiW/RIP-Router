@@ -1,0 +1,7 @@
+Example 3 (fig. 1 from assignment spec):
+1:2w1,7w8
+2:3w3
+3:4w4
+4:7w6,5w2
+5:6w1
+6:1w5
