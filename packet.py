@@ -1,13 +1,14 @@
 import struct
 from socket import *
 
-
 class Packet:
 
     def __init__(self):
         self.len_bytes = 0
         self.byte_format = ""  # A format string used by struct to pack and unpack values
         self.field_names = []  # The names of fields in this packet's format
+        self.unpacked = False
+        self.packed = False
 
     def __len__(self):
         return self.len_bytes
@@ -27,10 +28,14 @@ class Packet:
         for i in range(0, len(values)):
             setattr(self, self.field_names[i], values[i])
 
+        self.unpacked = True
+
     def pack(self, values):
         """ Take a list of values and generate a byte string according to the packet format """
         if len(self.field_names) == 0:
             raise Exception("Missing packet format!")
+
+        self.packed = True
 
         return struct.pack(self.byte_format, *values)
 
@@ -65,16 +70,21 @@ class Packet:
 
 class RIPPacket(Packet):
 
+    RIP_VERSION = 2
+    RIP_COMMAND = 2 # RIP Command: 2 is 'response'
+    AF_INET = 2
+
     def __init__(self, byte_data=None):
         """ Initialize RIP packet header fields, optionally unpack byte_data """
         super().__init__()
+
+        self.command = None
+        self.version = None
         self.from_router_id = None
         self.entries = []
         self.num_entries = 0
         self.entry_size = 20  # Size in bytes of a RIP entry
         self.header_size = 4  # Size in bytes of RIP header
-        self.command = 2  # RIP Command: 2 is 'response'
-        self.version = 2  # RIP version
 
         # Add header fields to packet format
         self.format_int8("command")
@@ -87,7 +97,7 @@ class RIPPacket(Packet):
     def add_entry(self, router_id, cost):
         """ Add a RIP entry to this packet """
         self.entries.append({
-            "afi": 2,  # AF_INET
+            "afi": self.AF_INET,
             "router_id": router_id,
             "cost": cost,
         })
@@ -99,6 +109,27 @@ class RIPPacket(Packet):
         self.format_int32("router_id_" + str(self.num_entries))
         self.format_padding(8)
         self.format_int32("cost_" + str(self.num_entries))
+
+    def validate(self):
+        """ Validate known fields for incoming RIP packets """
+        if not self.unpacked:
+            return False
+
+        if self.version != self.RIP_VERSION:
+            return False
+
+        if self.command != self.RIP_COMMAND:
+            return False
+
+        for entry in self.entries:
+            if entry['afi'] != self.AF_INET:
+                return False
+
+            if not (entry['cost'] >= 1 and entry['cost'] <= 16):
+                return False
+
+        return True
+
 
     def unpack(self, byte_data):
         """ Unpack byte_data to populate this RIP packet """
@@ -134,7 +165,7 @@ class RIPPacket(Packet):
 
         # Add header values if not explicitly set
         if not values:
-            values = [self.command, self.version, self.from_router_id]
+            values = [self.RIP_COMMAND, self.RIP_VERSION, self.from_router_id]
 
         # Append RIP entry values to list for packing
         for entry in self.entries:
