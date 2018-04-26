@@ -177,7 +177,7 @@ class Router:
             if timed_out and route_info[RouteInfos.COST] != self.INFINITY:
                 self.log("Setting cost of route to", router_id, "to infinity, since it has timed out")
                 self.update_routing_table_entry(router_id, cost=self.INFINITY)
-                # Sending a triggered update here is redundant, as this method is always called before sending updates
+                # Sending a triggered update here is redundant, as this method is always called before sending updates.
 
             # Flag the route for deletion if its update timer field is sufficiently large.
             # Cannot delete them from the routing table now, since it is being iterated over.
@@ -309,14 +309,14 @@ class Router:
                     self.triggered_updates = []
 
                 # If it is time to send updates, update the routing table, then send it.
-                if time.time() - self.time_of_last_update >= self.update_period:
+                if time.time() - self.time_of_last_update >= self.update_period + random.randint(-5, 5):
                     print("\t---> Updating routing table based on timeouts.")
                     self.log("Updating routing table based on timeouts")
                     self.update_routing_table_timing()
                     print("\t---> Sending routing table to all neighbours.")
                     self.log("Sending routing table to all neighbours")
                     self.send_updates(self.routing_table.keys())
-                    self.time_of_last_update = int(time.time()) + random.randint(-5, 5)
+                    self.time_of_last_update = int(time.time())
 
                 self.process_inputs()
             except OSError:
