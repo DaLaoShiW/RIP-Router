@@ -1,6 +1,3 @@
-import os
-
-
 class Loader:
     MIN_PORT = 1024
     MAX_PORT = 64000
@@ -52,17 +49,17 @@ class Loader:
 
         if all([self.router.id, self.router.input_ports, self.router.outputs]):
             print("Configuration loaded!")
-            self.print_config_values()
+            print(self.get_pretty_config_values())
         else:
             print("Error in configuration file")
             print("Incomplete configuration, 'router-id', 'input-ports', and 'outputs' required")
-            self.print_config_values()
+            print(self.get_pretty_config_values())
             print()
             exit(10)
 
-    def print_config_values(self):
-        """ Print the router's values, obtained from the config file """
-        print("-" * 40)
+    def get_pretty_config_values(self):
+        """ Get the router's values, obtained from the config file, in a nice format. """
+        values = "-" * 40 + "\n"
         config_values = [
             ("Router ID", self.router.id),
             ("Input Ports", self.router.input_ports),
@@ -71,11 +68,12 @@ class Loader:
             ("Timeout Length", self.router.timeout_length),
             ("Garbage Collection Timeout Length", self.router.deletion_length)
         ]
-        print(*[title + ": " + str(value) for title, value in config_values], sep=os.linesep)
-        print("-" * 40)
+        values += "\n".join([title + ": " + str(value) for title, value in config_values])
+        values += "\n" + "-" * 40
+        return values
 
     def process_router_id(self, line):
-        """ Set the router's ID """
+        """ Set the router's ID. """
         parts = line.split(" ")
         if len(parts) > 2:
             raise ValueError("Invalid router-id: '" + " ".join(parts[1:]) + "', too many arguments")
@@ -84,7 +82,7 @@ class Loader:
         self.router.id = self.validate_router_id(parts[1].strip())
 
     def process_input_ports(self, line):
-        """ Set the input-ports for the router """
+        """ Set the input-ports for the router. """
         parts = " ".join(line.split(" ")[1:]).split(",")  # Remove 'input-ports' and split on commas.
         if not any(parts):
             raise ValueError("No input-ports given")
@@ -93,7 +91,7 @@ class Loader:
             self.router.input_ports.append(self.validate_port(port))
 
     def process_outputs(self, line):
-        """ Set and format neighbor routers (outputs) and their costs/router-ids """
+        """ Set and format neighbor routers (outputs) and their costs/router-ids. """
         parts = " ".join(line.split(" ")[1:]).split(",")  # Remove 'outputs' and split on commas.
         if not any(parts):
             raise ValueError("No outputs given")
@@ -108,7 +106,7 @@ class Loader:
             self.router.outputs[output_router_id] = (output_port, output_router_cost)
 
     def process_update_period(self, line):
-        """ Set periodic update time and timeout duration for the router """
+        """ Set periodic update time and timeout duration for the router. """
         parts = line.split(" ")
         if len(parts) > 2:
             raise ValueError("Invalid update-period: '" + " ".join(parts[1:]) + "', too many arguments")
@@ -123,7 +121,7 @@ class Loader:
         self.router.deletion_length = self.router.timeout_length + deletion_after_timeout
 
     def validate_router_id(self, router_id):
-        """ Validate a router-id """
+        """ Validate a router-id. """
         router_id = router_id.strip()
         if not all([True if c.isdigit() else False for c in str(router_id)]):
             raise ValueError("Invalid router-id '" + str(router_id) + "', not a positive integer")
@@ -138,7 +136,7 @@ class Loader:
         return router_id
 
     def validate_port(self, port):
-        """ Validate a port number """
+        """ Validate a port number. """
         port = port.strip()
         if not port or not all([True if c.isdigit() else False for c in str(port)]):
             raise ValueError("Invalid port: '" + str(port) + "', not a positive integer")
@@ -150,7 +148,7 @@ class Loader:
         return port
 
     def validate_cost(self, cost):
-        """ Validate a router cost """
+        """ Validate a router cost. """
         cost = cost.strip()
         if not all([True if c.isdigit() or c == "-" else False for c in str(cost)]):
             raise ValueError("Invalid cost: '" + str(cost) + "', not an integer")
@@ -166,7 +164,7 @@ class Loader:
 
     @staticmethod
     def validate_update_period(update_period):
-        """ Validate a router update_period """
+        """ Validate a router update_period. """
         update_period = update_period.strip()
         if not all([True if c.isdigit() else False for c in str(update_period)]):
             raise ValueError("Invalid update-period: '" + str(update_period) + "', not a positive integer")
