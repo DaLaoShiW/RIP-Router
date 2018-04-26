@@ -1,15 +1,16 @@
-import random
+from random import randint
 import os
 import re
 import sys
-sys.path.append('../')
 
 from router import RouteInfos
 import dijkstras
 
+sys.path.append('../')
+
 # ////////////////////////////// OPTIONS \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ #
 # Router ids must be sequential, starting from 1, skipping no numbers.
-undirected_adjacency_list = """
+undir_adj_list = """
 1:2w1,7w8
 2:3w3
 3:4w4
@@ -26,7 +27,10 @@ max_cost = 4
 
 # Check given undirected adjacency list
 router_ids = set(
-    map(int, [item for item in map(str.strip, re.split("[:,\n]", undirected_adjacency_list.strip())) if item.isdigit()])
+    map(
+        int,
+        [item for item in map(str.strip, re.split("[:,]|(?:\n|\r\n|\r)", undir_adj_list.strip())) if item.isdigit()]
+    )
 )
 expected_router_ids = set(range(1, int(max(router_ids)) + 1))
 if router_ids != expected_router_ids:
@@ -59,7 +63,7 @@ if os.path.isdir(config_path):
 # build the connections dictionary, mapping router ids to the set of routers they are connected to.
 edge_costs = {}
 connections = {}
-for line in undirected_adjacency_list.strip().splitlines():
+for line in undir_adj_list.strip().splitlines():
     line = line.strip()
     parts = line.split(":")
     router = parts[0]
@@ -68,7 +72,7 @@ for line in undirected_adjacency_list.strip().splitlines():
     for neighbour in full_neighbours:
         cost_parts = neighbour.split('w')
         neighbour = cost_parts[0]
-        edge_costs[Edge(router, neighbour)] = int(cost_parts[1]) if len(cost_parts) > 1 else random.randint(min_cost, max_cost)
+        edge_costs[Edge(router, neighbour)] = int(cost_parts[1]) if len(cost_parts) > 1 else randint(min_cost, max_cost)
 
     neighbours = set([part.split('w')[0] for part in parts[1].split(",")])
 
