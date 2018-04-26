@@ -36,7 +36,7 @@ class Router:
         self.load = False
         self.config_dir = None
 
-        self.log("Router created with id", self.id)
+        self.log("Router created!\n" + self.config_loader.get_pretty_config_values())
 
     def log(self, *args):
         message = " ".join(map(str, args))
@@ -132,10 +132,13 @@ class Router:
     def get_string_routing_table(self):
         """ Print this router's routing table, in a table format. """
         table = ""
-        row_format = "{:" + str(len("Destination")) + "} | {:" + str(len("First hop")) + "} {:" + str(len("Cost")) + "}"
-        table += row_format.format("Destination", "First hop", "Cost")
+        row_format = "{:" + str(len("Destination")) + "} | {:" + str(len("First hop")) + "} {:" + str(len("Cost")) + \
+                     "} {:" + str(len("Timer")) + "}"
+        table += row_format.format("Destination", "First hop", "Cost", "Timer")
         for dest_id, route_info in self.routing_table.items():
-            table += "\n" + row_format.format(dest_id, route_info[RouteInfos.FIRST_HOP], route_info[RouteInfos.COST])
+            table += "\n" + row_format.format(
+                dest_id, route_info[RouteInfos.FIRST_HOP], route_info[RouteInfos.COST], route_info[RouteInfos.TIMER]
+            )
         return table
 
     def update_routing_table_entry(self, router_id, first_hop=None, cost=None, timer=None):
@@ -292,7 +295,7 @@ class Router:
         # Only print and save routing table if there was at least one input to process.
         if read_ready:
             print("<--- Processed input. Routing table:")
-            print(self.get_string_routing_table())
+            print("Router " + str(self.id) + " routing table:\n" + self.get_string_routing_table())
             self.check_if_converged()
             self.save_routing_table()
 
@@ -302,15 +305,14 @@ class Router:
             try:  # Temporary. To avoid Windows 10 bug when using print() statements to cmd.exe stdout.
                 # If there is any router ids in the triggered update queue, send the updates.
                 if self.triggered_updates:
-                    print("\t---> Triggered update(s). Sending routing table to all neighbours.")
-                    self.log("Triggered update(s), sending routing table to all neighbours")
+                    print("\t---> Sending triggered update(s) to all neighbours.")
+                    self.log("Sending triggered update(s) to all neighbours")
                     self.send_updates(self.triggered_updates)
                     # Clear the queue.
                     self.triggered_updates = []
 
                 # If it is time to send updates, update the routing table, then send it.
                 if time.time() - self.time_of_last_update >= self.update_period + random.randint(-5, 5):
-                    print("\t---> Updating routing table based on timeouts.")
                     self.log("Updating routing table based on timeouts")
                     self.update_routing_table_timing()
                     print("\t---> Sending routing table to all neighbours.")
@@ -334,8 +336,8 @@ class RouteInfo(OrderedDict):
     def __init__(self, first_hop, cost, timer=0):
         super().__init__(
             [(RouteInfos.FIRST_HOP, first_hop),
-             (RouteInfos.COST, cost),
-             (RouteInfos.TIMER, timer)]
+                (RouteInfos.COST, cost),
+                (RouteInfos.TIMER, timer)]
         )
 
     def __str__(self):
