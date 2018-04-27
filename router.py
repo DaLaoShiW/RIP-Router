@@ -61,9 +61,6 @@ class Router:
                         break
                     our_entry = simplified_routing_table[dest_id]
                     expected_entry = expected_routing_table[dest_id]
-                    matching = our_entry[RouteInfos.FIRST_HOP] == expected_entry[RouteInfos.FIRST_HOP]
-                    if not matching:
-                        break
                     matching = our_entry[RouteInfos.COST] == expected_entry[RouteInfos.COST]
                     if not matching:
                         break
