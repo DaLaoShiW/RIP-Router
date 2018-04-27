@@ -246,10 +246,12 @@ class Router:
                 input_router_cost_update = None
                 current_input_router_cost = self.routing_table[input_router_id][RouteInfos.COST]
 
-                if current_input_router_cost <= input_router_cost:
+                if input_router_cost <= current_input_router_cost:
                     input_router_cost_update = input_router_cost
 
-            self.update_routing_table_entry(input_router_id, first_hop=input_router_id, timer=0, cost=input_router_cost_update)
+            self.update_routing_table_entry(
+                input_router_id, first_hop=input_router_id, timer=0, cost=input_router_cost_update
+            )
 
             # Process RIP packet entries
             for entry in rip_packet.entries:
@@ -307,8 +309,7 @@ class Router:
             if self.verbose:
                 print("<--- Processed input. Routing table:")
             else:
-                clear = lambda: os.system('cls')
-                clear()
+                os.system('cls')
 
             print(self.config_loader.get_pretty_config_values(self.verbose))
             print(self.get_string_routing_table())
