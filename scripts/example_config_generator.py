@@ -1,10 +1,12 @@
-from random import randint
+import random
+import math
 import os
 import re
 import sys
 
-from router import RouteInfos
 import dijkstras
+
+from router import RouteInfos
 
 sys.path.append('../')
 
@@ -14,11 +16,39 @@ undir_adj_list = """
 1:2
 """
 
-example_num = "4"
+example_num = "10"
 update_period = "5"
 min_cost = 1
 max_cost = 5
+
+# Used to weight costs.
+average_cost = 1.5  # Can be set to None to have no weighting in the range (min_cost, max_cost)
 # \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ OPTIONS ////////////////////////////// #
+
+# Build the costs list, containing the costs that routers will randomly choose from, if costs arent defined in adj list.
+if average_cost:
+    cost_range = max_cost - min_cost + 1
+    costs = []
+    # Decent guess at costs with given average.
+    for i in range(min_cost, max_cost + 1):
+        try:
+            amount = round(cost_range / (abs(i - average_cost)))
+        except ZeroDivisionError:
+            amount = cost_range * 5
+        costs += [i] * amount
+    # Brute force until the average of the costs is far better.
+    while True:
+        costs_average = sum(costs)/len(costs)
+        difference = costs_average - average_cost
+        if abs(difference) < 0.0001:
+            break
+        if difference > 0:
+            costs.append(random.randint(min_cost, math.floor(average_cost)))
+        else:
+            costs.append(random.randint(math.ceil(average_cost), max_cost))
+else:
+    costs = [i for i in range(min_cost, max_cost + 1)]
+
 
 # Check given undirected adjacency list
 router_ids = set(
@@ -49,7 +79,7 @@ class Edge(frozenset):
 config_path = "../configurations/example-" + example_num + "/"
 if os.path.isdir(config_path):
     confirm = input(
-        "That example configuration already exists. Enter 'y' to confirm overwrite (will invalidate network diagram): "
+        "Example {} already exists. Enter 'y' to confirm overwrite (will invalidate any diagrams): ".format(example_num)
     ).strip().lower()
     if confirm != "y":
         exit()
@@ -67,7 +97,10 @@ for line in undir_adj_list.strip().splitlines():
     for neighbour in full_neighbours:
         cost_parts = neighbour.split('w')
         neighbour = cost_parts[0]
-        edge_costs[Edge(router, neighbour)] = int(cost_parts[1]) if len(cost_parts) > 1 else randint(min_cost, max_cost)
+        if len(cost_parts) > 1:
+            edge_costs[Edge(router, neighbour)] = int(cost_parts[1])
+        else:
+            edge_costs[Edge(router, neighbour)] = random.choice(costs)
 
     neighbours = set([part.split('w')[0] for part in parts[1].split(",")])
 
@@ -147,6 +180,9 @@ for router_id in router_ids:
             continue
         try:
             cost, path = dijkstras.shortest_path(graph, router_id, target_router_id)
+            if cost >= 16:
+                print("WARNING! A minimum cost path of {} was found (16 or higher).".format(cost))
+                input("Enter anything to continue...")
             first_hop = path[1]  # path[0] is router_id itself.
             converged_routing_table += '\t"{}": {{\n'.format(target_router_id)
             converged_routing_table += '\t\t"{}": {},\n'.format(RouteInfos.FIRST_HOP, first_hop)
