@@ -57,17 +57,20 @@ class Loader:
             print()
             exit(10)
 
-    def get_pretty_config_values(self):
+    def get_pretty_config_values(self, full_config=True):
         """ Get the router's values, obtained from the config file, in a nice format. """
         values = "-" * 40 + "\n"
         config_values = [
-            ("Router ID", self.router.id),
-            ("Input Ports", self.router.input_ports),
-            ("Output Routers", self.router.outputs),
-            ("Update Period", self.router.update_period),
-            ("Timeout Length", self.router.timeout_length),
-            ("Garbage Collection Timeout Length", self.router.deletion_length)
+            ("Router ID", self.router.id)
         ]
+        if full_config:
+            config_values += [
+                ("Input Ports", self.router.input_ports),
+                ("Output Routers", self.router.outputs),
+                ("Update Period", self.router.update_period),
+                ("Timeout Length", self.router.timeout_length),
+                ("Garbage Collection Timeout Length", self.router.deletion_length)
+            ]
         values += "\n".join([title + ": " + str(value) for title, value in config_values])
         values += "\n" + "-" * 40
         return values
