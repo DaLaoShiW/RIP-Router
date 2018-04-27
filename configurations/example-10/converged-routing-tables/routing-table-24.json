@@ -1,0 +1,198 @@
+{
+	"1": {
+		"first-hop": 21,
+		"cost": 6
+	},
+	"2": {
+		"first-hop": 21,
+		"cost": 7
+	},
+	"3": {
+		"first-hop": 21,
+		"cost": 7
+	},
+	"4": {
+		"first-hop": 21,
+		"cost": 7
+	},
+	"5": {
+		"first-hop": 25,
+		"cost": 8
+	},
+	"6": {
+		"first-hop": 25,
+		"cost": 7
+	},
+	"7": {
+		"first-hop": 21,
+		"cost": 8
+	},
+	"8": {
+		"first-hop": 25,
+		"cost": 8
+	},
+	"9": {
+		"first-hop": 25,
+		"cost": 6
+	},
+	"10": {
+		"first-hop": 25,
+		"cost": 5
+	},
+	"11": {
+		"first-hop": 25,
+		"cost": 6
+	},
+	"12": {
+		"first-hop": 25,
+		"cost": 4
+	},
+	"13": {
+		"first-hop": 21,
+		"cost": 4
+	},
+	"14": {
+		"first-hop": 21,
+		"cost": 4
+	},
+	"15": {
+		"first-hop": 25,
+		"cost": 4
+	},
+	"16": {
+		"first-hop": 25,
+		"cost": 2
+	},
+	"17": {
+		"first-hop": 25,
+		"cost": 4
+	},
+	"18": {
+		"first-hop": 21,
+		"cost": 3
+	},
+	"19": {
+		"first-hop": 25,
+		"cost": 3
+	},
+	"20": {
+		"first-hop": 21,
+		"cost": 2
+	},
+	"21": {
+		"first-hop": 21,
+		"cost": 1
+	},
+	"22": {
+		"first-hop": 21,
+		"cost": 2
+	},
+	"23": {
+		"first-hop": 21,
+		"cost": 3
+	},
+	"25": {
+		"first-hop": 25,
+		"cost": 1
+	},
+	"26": {
+		"first-hop": 21,
+		"cost": 2
+	},
+	"27": {
+		"first-hop": 21,
+		"cost": 3
+	},
+	"28": {
+		"first-hop": 21,
+		"cost": 3
+	},
+	"29": {
+		"first-hop": 21,
+		"cost": 4
+	},
+	"30": {
+		"first-hop": 21,
+		"cost": 3
+	},
+	"31": {
+		"first-hop": 21,
+		"cost": 4
+	},
+	"32": {
+		"first-hop": 21,
+		"cost": 5
+	},
+	"33": {
+		"first-hop": 21,
+		"cost": 5
+	},
+	"34": {
+		"first-hop": 21,
+		"cost": 6
+	},
+	"35": {
+		"first-hop": 21,
+		"cost": 6
+	},
+	"36": {
+		"first-hop": 21,
+		"cost": 5
+	},
+	"37": {
+		"first-hop": 21,
+		"cost": 4
+	},
+	"38": {
+		"first-hop": 21,
+		"cost": 5
+	},
+	"39": {
+		"first-hop": 21,
+		"cost": 5
+	},
+	"40": {
+		"first-hop": 21,
+		"cost": 6
+	},
+	"41": {
+		"first-hop": 21,
+		"cost": 6
+	},
+	"42": {
+		"first-hop": 21,
+		"cost": 7
+	},
+	"43": {
+		"first-hop": 21,
+		"cost": 8
+	},
+	"44": {
+		"first-hop": 21,
+		"cost": 8
+	},
+	"45": {
+		"first-hop": 21,
+		"cost": 7
+	},
+	"46": {
+		"first-hop": 21,
+		"cost": 8
+	},
+	"47": {
+		"first-hop": 21,
+		"cost": 5
+	},
+	"48": {
+		"first-hop": 21,
+		"cost": 6
+	},
+	"49": {
+		"first-hop": 21,
+		"cost": 6
+	},
+	"50": {
+		"first-hop": 21,
+		"cost": 6
+	}
+}

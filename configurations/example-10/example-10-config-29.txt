@@ -1,0 +1,4 @@
+router-id 29
+input-ports 902927, 902928
+outputs 902729/1/27, 902829/1/28
+update-period 5

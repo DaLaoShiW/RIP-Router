@@ -1,0 +1,4 @@
+router-id 15
+input-ports 90156, 90159, 90153
+outputs 90615/1/6, 90915/2/9, 90315/3/3
+update-period 5

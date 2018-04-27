@@ -1,0 +1,4 @@
+router-id 22
+input-ports 902220, 902221
+outputs 902022/1/20, 902122/1/21
+update-period 5

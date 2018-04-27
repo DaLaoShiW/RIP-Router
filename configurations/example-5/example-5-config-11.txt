@@ -1,0 +1,4 @@
+router-id 11
+input-ports 90118, 90119
+outputs 90811/1/8, 90911/2/9
+update-period 5

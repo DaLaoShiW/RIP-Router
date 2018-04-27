@@ -1,0 +1,4 @@
+router-id 7
+input-ports 90719, 9078, 9079
+outputs 90197/1/19, 9087/2/8, 9097/2/9
+update-period 5

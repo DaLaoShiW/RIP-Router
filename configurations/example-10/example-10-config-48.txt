@@ -1,0 +1,4 @@
+router-id 48
+input-ports 904845, 904847
+outputs 904548/1/45, 904748/1/47
+update-period 5
