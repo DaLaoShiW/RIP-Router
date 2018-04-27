@@ -11,18 +11,13 @@ sys.path.append('../')
 # ////////////////////////////// OPTIONS \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ #
 # Router ids must be sequential, starting from 1, skipping no numbers.
 undir_adj_list = """
-1:2w1,7w8
-2:3w3
-3:4w4
-4:7w6,5w2
-5:6w1
-6:1w5
+1:2
 """
 
-example_num = "3"
+example_num = "4"
 update_period = "5"
 min_cost = 1
-max_cost = 4
+max_cost = 5
 # \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ OPTIONS ////////////////////////////// #
 
 # Check given undirected adjacency list
@@ -62,7 +57,7 @@ if os.path.isdir(config_path):
 # Build the edges dictionary, mapping edges (immutable pairs of router ids) to costs (randomly generated), and
 # build the connections dictionary, mapping router ids to the set of routers they are connected to.
 edge_costs = {}
-connections = {}
+connections = {str(i): set() for i in router_ids}
 for line in undir_adj_list.strip().splitlines():
     line = line.strip()
     parts = line.split(":")
@@ -76,15 +71,9 @@ for line in undir_adj_list.strip().splitlines():
 
     neighbours = set([part.split('w')[0] for part in parts[1].split(",")])
 
-    if router not in connections:
-        connections[router] = neighbours
-    else:
-        connections[router] |= neighbours
+    connections[router] |= neighbours
     for neighbour in neighbours:
-        if neighbour not in connections:
-            connections[neighbour] = set(router)
-        else:
-            connections[neighbour] |= set(router)
+        connections[neighbour] |= {router}
 
 # Build the Graph object.
 graph = dijkstras.Graph()
@@ -149,17 +138,24 @@ for router in connections:
         config_file.write(config)
 
 # Build expected converged routing table files
-for router_id in connections:
+for router_id in router_ids:
+    router_id = str(router_id)
     converged_routing_table = "{\n"
-    for target_router_id in sorted(connections):
+    for target_router_id in router_ids:
+        target_router_id = str(target_router_id)
         if router_id == target_router_id:
             continue
-        cost, path = dijkstras.shortest_path(graph, router_id, target_router_id)
-        first_hop = path[1]  # path[0] is router_id itself.
-        converged_routing_table += '\t"{}": {{\n'.format(target_router_id)
-        converged_routing_table += '\t\t"{}": {},\n'.format(RouteInfos.FIRST_HOP, first_hop)
-        converged_routing_table += '\t\t"{}": {}\n'.format(RouteInfos.COST, cost)
-        converged_routing_table += "\t},\n"
+        try:
+            cost, path = dijkstras.shortest_path(graph, router_id, target_router_id)
+            first_hop = path[1]  # path[0] is router_id itself.
+            converged_routing_table += '\t"{}": {{\n'.format(target_router_id)
+            converged_routing_table += '\t\t"{}": {},\n'.format(RouteInfos.FIRST_HOP, first_hop)
+            converged_routing_table += '\t\t"{}": {}\n'.format(RouteInfos.COST, cost)
+            converged_routing_table += "\t},\n"
+        except KeyError:
+            print("Could not create a path between two nodes of the graph. This probably means the graph described "
+                  "by your adjacency list is disjoint")
+            exit(1)
     converged_routing_table = converged_routing_table[0:-2]
     converged_routing_table += "\n}"
     expected_dir_path = config_path + "converged-routing-tables/"
