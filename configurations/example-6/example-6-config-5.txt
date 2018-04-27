@@ -1,4 +1,4 @@
 router-id 5
-input-ports 9058
-outputs 9085/3/8
+input-ports 50508
+outputs 50805/2/8
 update-period 5

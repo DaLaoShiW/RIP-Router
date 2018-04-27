@@ -1,46 +1,46 @@
 {
 	"1": {
-		"first-hop": 5,
-		"cost": 6
+		"first-hop": 2,
+		"cost": 3
 	},
 	"2": {
 		"first-hop": 2,
-		"cost": 5
+		"cost": 1
 	},
 	"3": {
-		"first-hop": 5,
-		"cost": 9
+		"first-hop": 2,
+		"cost": 2
 	},
 	"4": {
 		"first-hop": 4,
 		"cost": 4
 	},
 	"5": {
-		"first-hop": 5,
-		"cost": 5
+		"first-hop": 2,
+		"cost": 3
 	},
 	"6": {
-		"first-hop": 4,
-		"cost": 5
+		"first-hop": 2,
+		"cost": 3
 	},
 	"8": {
 		"first-hop": 2,
-		"cost": 6
+		"cost": 3
 	},
 	"9": {
 		"first-hop": 2,
-		"cost": 7
+		"cost": 2
 	},
 	"10": {
 		"first-hop": 2,
-		"cost": 7
+		"cost": 3
 	},
 	"11": {
 		"first-hop": 2,
-		"cost": 6
+		"cost": 3
 	},
 	"12": {
-		"first-hop": 5,
-		"cost": 9
+		"first-hop": 2,
+		"cost": 4
 	}
 }

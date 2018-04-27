@@ -1,4 +1,4 @@
 router-id 11
-input-ports 901110
-outputs 901011/1/10
+input-ports 51110
+outputs 51011/1/10
 update-period 5

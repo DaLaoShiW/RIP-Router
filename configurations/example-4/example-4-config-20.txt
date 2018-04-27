@@ -1,4 +1,4 @@
 router-id 20
-input-ports 902016, 902013
-outputs 901620/1/16, 901320/1/13
+input-ports 52013, 52016
+outputs 51320/1/13, 51620/1/16
 update-period 5

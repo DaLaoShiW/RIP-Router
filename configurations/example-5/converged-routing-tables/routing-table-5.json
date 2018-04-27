@@ -1,7 +1,7 @@
 {
 	"1": {
 		"first-hop": 3,
-		"cost": 5
+		"cost": 3
 	},
 	"2": {
 		"first-hop": 4,
@@ -13,86 +13,86 @@
 	},
 	"4": {
 		"first-hop": 4,
-		"cost": 2
+		"cost": 3
 	},
 	"6": {
 		"first-hop": 6,
-		"cost": 2
+		"cost": 3
 	},
 	"7": {
-		"first-hop": 6,
-		"cost": 3
+		"first-hop": 3,
+		"cost": 4
 	},
 	"8": {
 		"first-hop": 6,
-		"cost": 4
+		"cost": 6
 	},
 	"9": {
 		"first-hop": 6,
-		"cost": 6
+		"cost": 7
 	},
 	"10": {
 		"first-hop": 6,
-		"cost": 6
+		"cost": 8
 	},
 	"11": {
 		"first-hop": 6,
-		"cost": 5
+		"cost": 7
 	},
 	"12": {
 		"first-hop": 6,
-		"cost": 7
+		"cost": 8
 	},
 	"13": {
 		"first-hop": 6,
-		"cost": 6
+		"cost": 8
 	},
 	"14": {
 		"first-hop": 6,
-		"cost": 7
+		"cost": 8
 	},
 	"15": {
 		"first-hop": 6,
-		"cost": 7
+		"cost": 10
 	},
 	"16": {
-		"first-hop": 6,
-		"cost": 15
+		"first-hop": 3,
+		"cost": 13
 	},
 	"17": {
-		"first-hop": 6,
-		"cost": 14
-	},
-	"18": {
-		"first-hop": 6,
-		"cost": 15
-	},
-	"19": {
-		"first-hop": 6,
-		"cost": 15
-	},
-	"20": {
-		"first-hop": 6,
-		"cost": 14
-	},
-	"21": {
-		"first-hop": 6,
+		"first-hop": 3,
 		"cost": 12
 	},
-	"22": {
-		"first-hop": 6,
+	"18": {
+		"first-hop": 3,
+		"cost": 13
+	},
+	"19": {
+		"first-hop": 3,
+		"cost": 13
+	},
+	"20": {
+		"first-hop": 3,
+		"cost": 10
+	},
+	"21": {
+		"first-hop": 3,
 		"cost": 11
+	},
+	"22": {
+		"first-hop": 3,
+		"cost": 9
 	},
 	"23": {
 		"first-hop": 3,
-		"cost": 9
+		"cost": 7
 	},
 	"24": {
-		"first-hop": 6,
-		"cost": 9
+		"first-hop": 3,
+		"cost": 11
 	},
 	"25": {
 		"first-hop": 3,
-		"cost": 7
+		"cost": 5
 	}
 }

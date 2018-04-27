@@ -1,4 +1,4 @@
 router-id 4
-input-ports 9041
-outputs 9014/4/1
+input-ports 50401
+outputs 50104/1/1
 update-period 5

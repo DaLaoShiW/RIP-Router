@@ -1,4 +1,4 @@
 router-id 46
-input-ports 904645
-outputs 904546/1/45
+input-ports 54645
+outputs 54546/1/45
 update-period 5

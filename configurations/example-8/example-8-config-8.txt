@@ -1,4 +1,4 @@
 router-id 8
-input-ports 9083, 90810, 9089
-outputs 9038/1/3, 90108/4/10, 9098/1/9
+input-ports 50803, 50810, 50809
+outputs 50308/5/3, 51008/3/10, 50908/5/9
 update-period 5

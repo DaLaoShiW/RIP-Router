@@ -19,10 +19,10 @@ undir_adj_list = """
 example_num = "10"
 update_period = "5"
 min_cost = 1
-max_cost = 5
+max_cost = 1
 
 # Used to weight costs.
-average_cost = 1.5  # Can be set to None to have no weighting in the range (min_cost, max_cost)
+average_cost = None  # Can be set to None to have no weighting in the range (min_cost, max_cost)
 # \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ OPTIONS ////////////////////////////// #
 
 # Build the costs list, containing the costs that routers will randomly choose from, if costs arent defined in adj list.
@@ -153,16 +153,24 @@ if not passed:
     exit()
 
 # Build config files needed for router operation.
+
+
+def pad_zero(str_num):
+    if len(str_num) == 2:
+        return str_num
+    elif len(str_num) == 1:
+        return "0" + str_num
+
 for router in connections:
     config = "router-id " + router + "\n"
     config += "input-ports "
     for neighbour in connections[router]:
-        config += "90" + router + neighbour + ", "
+        config += "5" + pad_zero(router) + pad_zero(neighbour) + ", "
     config = config[:-2]
     config += "\noutputs "
     for neighbour in connections[router]:
         cost = edge_costs[Edge(router, neighbour)]
-        config += "90" + neighbour + router + "/" + str(cost) + "/" + neighbour + ", "
+        config += "5" + pad_zero(neighbour) + pad_zero(router) + "/" + str(cost) + "/" + neighbour + ", "
     config = config[:-2]
     config += "\nupdate-period " + update_period
     config_filename = "example-" + example_num + "-config-" + router + ".txt"

@@ -1,4 +1,4 @@
 router-id 6
-input-ports 9062
-outputs 9026/1/2
+input-ports 50602
+outputs 50206/2/2
 update-period 5

@@ -1,15 +1,15 @@
 {
 	"1": {
 		"first-hop": 7,
-		"cost": 5
+		"cost": 6
 	},
 	"2": {
 		"first-hop": 7,
-		"cost": 7
+		"cost": 11
 	},
 	"3": {
 		"first-hop": 7,
-		"cost": 11
+		"cost": 13
 	},
 	"4": {
 		"first-hop": 7,
@@ -17,15 +17,15 @@
 	},
 	"5": {
 		"first-hop": 5,
-		"cost": 3
+		"cost": 2
 	},
 	"6": {
 		"first-hop": 7,
-		"cost": 5
+		"cost": 8
 	},
 	"7": {
 		"first-hop": 7,
-		"cost": 3
+		"cost": 5
 	},
 	"9": {
 		"first-hop": 9,
@@ -33,10 +33,10 @@
 	},
 	"10": {
 		"first-hop": 7,
-		"cost": 8
+		"cost": 10
 	},
 	"11": {
 		"first-hop": 7,
-		"cost": 9
+		"cost": 10
 	}
 }

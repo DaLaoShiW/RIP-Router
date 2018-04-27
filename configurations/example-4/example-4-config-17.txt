@@ -1,4 +1,4 @@
 router-id 17
-input-ports 901710, 901718
-outputs 901017/1/10, 901817/1/18
+input-ports 51710, 51718
+outputs 51017/1/10, 51817/1/18
 update-period 5

@@ -1,31 +1,31 @@
 {
 	"1": {
 		"first-hop": 8,
-		"cost": 8
+		"cost": 7
 	},
 	"2": {
 		"first-hop": 8,
-		"cost": 7
+		"cost": 8
 	},
 	"3": {
 		"first-hop": 8,
-		"cost": 5
+		"cost": 6
 	},
 	"4": {
 		"first-hop": 8,
-		"cost": 6
+		"cost": 7
 	},
 	"5": {
 		"first-hop": 8,
-		"cost": 6
+		"cost": 8
 	},
 	"6": {
 		"first-hop": 8,
-		"cost": 4
+		"cost": 5
 	},
 	"7": {
 		"first-hop": 8,
-		"cost": 5
+		"cost": 7
 	},
 	"8": {
 		"first-hop": 8,
@@ -36,7 +36,7 @@
 		"cost": 1
 	},
 	"11": {
-		"first-hop": 9,
+		"first-hop": 8,
 		"cost": 3
 	},
 	"12": {
@@ -45,7 +45,7 @@
 	},
 	"13": {
 		"first-hop": 13,
-		"cost": 2
+		"cost": 3
 	},
 	"14": {
 		"first-hop": 14,
@@ -53,46 +53,46 @@
 	},
 	"15": {
 		"first-hop": 15,
-		"cost": 1
+		"cost": 2
 	},
 	"16": {
 		"first-hop": 15,
-		"cost": 9
+		"cost": 10
 	},
 	"17": {
 		"first-hop": 15,
-		"cost": 8
+		"cost": 9
 	},
 	"18": {
 		"first-hop": 15,
-		"cost": 9
+		"cost": 10
 	},
 	"19": {
 		"first-hop": 15,
-		"cost": 9
+		"cost": 10
 	},
 	"20": {
 		"first-hop": 15,
-		"cost": 8
+		"cost": 7
 	},
 	"21": {
 		"first-hop": 15,
-		"cost": 6
+		"cost": 8
 	},
 	"22": {
 		"first-hop": 15,
-		"cost": 5
+		"cost": 6
 	},
 	"23": {
 		"first-hop": 15,
-		"cost": 7
+		"cost": 8
 	},
 	"24": {
 		"first-hop": 15,
-		"cost": 3
+		"cost": 4
 	},
 	"25": {
-		"first-hop": 15,
+		"first-hop": 8,
 		"cost": 9
 	}
 }

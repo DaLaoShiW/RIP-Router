@@ -1,4 +1,4 @@
 router-id 22
-input-ports 902220, 902221
-outputs 902022/1/20, 902122/1/21
+input-ports 52220, 52221
+outputs 52022/1/20, 52122/1/21
 update-period 5

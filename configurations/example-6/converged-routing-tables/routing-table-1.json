@@ -1,15 +1,15 @@
 {
 	"2": {
 		"first-hop": 4,
-		"cost": 5
+		"cost": 7
 	},
 	"3": {
 		"first-hop": 4,
-		"cost": 6
+		"cost": 7
 	},
 	"4": {
 		"first-hop": 4,
-		"cost": 3
+		"cost": 2
 	},
 	"5": {
 		"first-hop": 7,
@@ -21,15 +21,15 @@
 	},
 	"7": {
 		"first-hop": 7,
-		"cost": 2
+		"cost": 1
 	},
 	"8": {
 		"first-hop": 7,
-		"cost": 5
+		"cost": 6
 	},
 	"9": {
 		"first-hop": 7,
-		"cost": 9
+		"cost": 4
 	},
 	"10": {
 		"first-hop": 4,

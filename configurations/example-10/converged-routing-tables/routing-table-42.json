@@ -76,7 +76,7 @@
 		"cost": 10
 	},
 	"20": {
-		"first-hop": 40,
+		"first-hop": 44,
 		"cost": 7
 	},
 	"21": {
@@ -88,7 +88,7 @@
 		"cost": 7
 	},
 	"23": {
-		"first-hop": 40,
+		"first-hop": 44,
 		"cost": 8
 	},
 	"24": {

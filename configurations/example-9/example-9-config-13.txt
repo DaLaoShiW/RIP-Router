@@ -1,4 +1,4 @@
 router-id 13
-input-ports 90138
-outputs 90813/3/8
+input-ports 51308
+outputs 50813/2/8
 update-period 5
