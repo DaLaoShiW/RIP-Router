@@ -307,8 +307,7 @@ class Router:
             if self.verbose:
                 print("<--- Processed input. Routing table:")
             else:
-                clear = lambda: os.system('cls')
-                clear()
+                os.system('cls')
 
             print(self.config_loader.get_pretty_config_values(self.verbose))
             print(self.get_string_routing_table())
