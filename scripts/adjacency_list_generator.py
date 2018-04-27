@@ -7,7 +7,7 @@ class NodeInfo:
     current_neighbours = "current_neighbours"
     
 
-def get_adj_list(num_routers=1, min_degree=1, max_degree=1, connectivity=None):
+def get_adj_list(num_routers=1, min_degree=1, max_degree=1, connectivity=None, force_connect_close=False):
     if connectivity:
         min_degree = max(1, int((0.5 * connectivity * num_routers)))
         max_degree = math.ceil(1.5 * connectivity * num_routers)
@@ -42,13 +42,17 @@ def get_adj_list(num_routers=1, min_degree=1, max_degree=1, connectivity=None):
             continue
 
         for _ in range(more_degree):
-            if len(eligible_neighbours) == 1:
-                rand_index = 0
-            elif not eligible_neighbours:
+            if not eligible_neighbours:
                 continue
-            else:
-                rand_index = random.randint(0, len(eligible_neighbours) - 1)
-            rand_neighbour = eligible_neighbours[rand_index]
+            if not force_connect_close:
+                if len(eligible_neighbours) == 1:
+                    rand_index = 0
+                else:
+                    rand_index = random.randint(0, len(eligible_neighbours) - 1)
+                rand_neighbour = eligible_neighbours[rand_index]
+            if force_connect_close:
+                closest_neighbour = min(eligible_neighbours, key=lambda x: abs(x - router))
+                rand_neighbour = closest_neighbour
 
             connections[router][NodeInfo.current_neighbours] += [rand_neighbour]
             connections[rand_neighbour][NodeInfo.current_neighbours] += [router]
@@ -62,5 +66,5 @@ def get_adj_list(num_routers=1, min_degree=1, max_degree=1, connectivity=None):
 
 # NOT GURANTEED TO FORM A NON-DISJOINT GRAPH
 
-print(get_adj_list(num_routers=20, min_degree=1, max_degree=3))
+print(get_adj_list(num_routers=50, min_degree=1, max_degree=3, force_connect_close=True))
 # print(get_adj_list(num_routers=10000, connectivity=0.05))
