@@ -237,12 +237,21 @@ class Router:
 
             # Get the cost of the route to the input router that has sent the update.
             input_router_cost = self.outputs[input_router_id][1]
+
             # Reset the timer field of the route to the input router, as this update verifies it is still alive.
             # If this router's known link cost is less than the existing route, update the cost.
-            current_input_router_cost = self.routing_table[input_router_id][RouteInfos.COST]
-            input_router_cost_update = None if current_input_router_cost <= input_router_cost else input_router_cost
-            self.update_routing_table_entry(input_router_id, timer=0, cost=input_router_cost_update)
+            input_router_cost_update = input_router_cost
 
+            if input_router_id in self.routing_table:
+                input_router_cost_update = None
+                current_input_router_cost = self.routing_table[input_router_id][RouteInfos.COST]
+
+                if current_input_router_cost <= input_router_cost:
+                    input_router_cost_update = input_router_cost
+
+            self.update_routing_table_entry(input_router_id, first_hop=input_router_id, timer=0, cost=input_router_cost_update)
+
+            # Process RIP packet entries
             for entry in rip_packet.entries:
                 destination_router_id = entry["router_id"]
 
