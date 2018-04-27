@@ -320,14 +320,14 @@ class Router:
                     self.triggered_updates = []
 
                 # If it is time to send updates, update the routing table, then send it.
-                if time.time() - self.time_of_last_update >= self.update_period + random.randint(-5, 5):
+                if time.time() - self.time_of_last_update >= self.update_period:
                     self.log("Updating routing table based on timeouts")
                     self.update_routing_table_timing()
                     if self.verbose:
                         print("\t---> Sending routing table to all neighbours.")
                     self.log("Sending routing table to all neighbours")
                     self.send_updates(self.routing_table.keys())
-                    self.time_of_last_update = int(time.time())
+                    self.time_of_last_update = int(time.time()) + random.randint(-5, 5)
 
                 self.process_inputs()
             except OSError:
