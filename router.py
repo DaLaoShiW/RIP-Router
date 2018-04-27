@@ -34,6 +34,7 @@ class Router:
         self.triggered_updates = []  # List of destination router ids.
 
         self.load = False
+        self.verbose = False
         self.config_dir = None
 
         self.log("Router created!\n" + self.config_loader.get_pretty_config_values())
@@ -60,9 +61,6 @@ class Router:
                         break
                     our_entry = simplified_routing_table[dest_id]
                     expected_entry = expected_routing_table[dest_id]
-                    matching = our_entry[RouteInfos.FIRST_HOP] == expected_entry[RouteInfos.FIRST_HOP]
-                    if not matching:
-                        break
                     matching = our_entry[RouteInfos.COST] == expected_entry[RouteInfos.COST]
                     if not matching:
                         break
@@ -135,7 +133,7 @@ class Router:
         row_format = "{:" + str(len("Destination")) + "} | {:" + str(len("First hop")) + "} {:" + str(len("Cost")) + \
                      "} {:" + str(len("Timer")) + "}"
         table += row_format.format("Destination", "First hop", "Cost", "Timer")
-        for dest_id, route_info in self.routing_table.items():
+        for dest_id, route_info in sorted(self.routing_table.items(), key=lambda x: x[0]):
             table += "\n" + row_format.format(
                 dest_id, route_info[RouteInfos.FIRST_HOP], route_info[RouteInfos.COST], route_info[RouteInfos.TIMER]
             )
@@ -239,12 +237,21 @@ class Router:
 
             # Get the cost of the route to the input router that has sent the update.
             input_router_cost = self.outputs[input_router_id][1]
+
             # Reset the timer field of the route to the input router, as this update verifies it is still alive.
             # If this router's known link cost is less than the existing route, update the cost.
-            current_input_router_cost = self.routing_table[input_router_id][RouteInfos.COST]
-            input_router_cost_update = None if current_input_router_cost <= input_router_cost else input_router_cost
-            self.update_routing_table_entry(input_router_id, timer=0, cost=input_router_cost_update)
+            input_router_cost_update = input_router_cost
 
+            if input_router_id in self.routing_table:
+                input_router_cost_update = None
+                current_input_router_cost = self.routing_table[input_router_id][RouteInfos.COST]
+
+                if current_input_router_cost <= input_router_cost:
+                    input_router_cost_update = input_router_cost
+
+            self.update_routing_table_entry(input_router_id, first_hop=input_router_id, timer=0, cost=input_router_cost_update)
+
+            # Process RIP packet entries
             for entry in rip_packet.entries:
                 destination_router_id = entry["router_id"]
 
@@ -297,8 +304,14 @@ class Router:
 
         # Only print and save routing table if there was at least one input to process.
         if read_ready:
-            print("<--- Processed input. Routing table:")
-            print("Router " + str(self.id) + " routing table:\n" + self.get_string_routing_table())
+            if self.verbose:
+                print("<--- Processed input. Routing table:")
+            else:
+                clear = lambda: os.system('cls')
+                clear()
+
+            print(self.config_loader.get_pretty_config_values(self.verbose))
+            print(self.get_string_routing_table())
             self.check_if_converged()
             self.save_routing_table()
 
@@ -308,20 +321,22 @@ class Router:
             try:  # Temporary. To avoid Windows 10 bug when using print() statements to cmd.exe stdout.
                 # If there is any router ids in the triggered update queue, send the updates.
                 if self.triggered_updates:
-                    print("\t---> Sending triggered update(s) to all neighbours.")
+                    if self.verbose:
+                        print("\t---> Sending triggered update(s) to all neighbours.")
                     self.log("Sending triggered update(s) to all neighbours")
                     self.send_updates(self.triggered_updates)
                     # Clear the queue.
                     self.triggered_updates = []
 
                 # If it is time to send updates, update the routing table, then send it.
-                if time.time() - self.time_of_last_update >= self.update_period + random.randint(-5, 5):
+                if time.time() - self.time_of_last_update >= self.update_period:
                     self.log("Updating routing table based on timeouts")
                     self.update_routing_table_timing()
-                    print("\t---> Sending routing table to all neighbours.")
+                    if self.verbose:
+                        print("\t---> Sending routing table to all neighbours.")
                     self.log("Sending routing table to all neighbours")
                     self.send_updates(self.routing_table.keys())
-                    self.time_of_last_update = int(time.time())
+                    self.time_of_last_update = int(time.time()) + random.randint(-5, 5)
 
                 self.process_inputs()
             except OSError:
@@ -367,7 +382,13 @@ def main():
 
     router = Router(config_lines)
     router.config_dir = "/".join(config_filename.split("/")[:-1])
-    router.load = len(args) == 3 and args[2].lower() == "load"
+
+    options = []
+    if len(args) >= 3:
+        [options.append(args[i]) for i in range(2, len(args))]
+
+    router.load = "load" in options or "l" in options
+    router.verbose = "verbose" in options or "v" in options
     router.bind_input_sockets()
     router.initialise_routing_table()
 
